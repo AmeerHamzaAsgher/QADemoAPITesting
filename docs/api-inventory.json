@@ -1,0 +1,1144 @@
+{
+  "application": "https://qademo.com/",
+  "apiBaseUrl": "https://qademo.com/api",
+  "discoveryDate": "2026-08-31",
+  "discoveryMethod": "Static analysis of the deployed frontend JS bundle (Vite/React SPA) plus live read-only curl requests against the discovered API",
+  "postmanImplemented": true,
+  "phase3Implementation": {
+    "date": "2026-08-31",
+    "collection": "QA-Demo Project",
+    "environment": "QA-Demo Environment",
+    "totalEndpoints": 24,
+    "implementedInPostman": 24,
+    "fullyImplemented": 21,
+    "partiallyImplemented": 3,
+    "partiallyImplementedEndpoints": [
+      "POST /products",
+      "PATCH /products/{id}",
+      "POST /orders"
+    ],
+    "notes": "All 24 discovered endpoints have a corresponding Postman request. 3 have an undetermined request body (see docs/POSTMAN_IMPLEMENTATION.md) and were not given invented fields. No test assertions were added in Phase 3 - see docs/POSTMAN_IMPLEMENTATION.md."
+  },
+  "authentication": {
+    "type": "Bearer token (JWT-style access token) + cookie-based refresh + client-generated session id",
+    "loginEndpoint": "/auth/login",
+    "logoutEndpoint": "/auth/logout",
+    "refreshEndpoint": "/auth/refresh",
+    "currentUserEndpoint": "/auth/me",
+    "accessTokenHeader": "Authorization: Bearer <accessToken>",
+    "accessTokenStorage": "in-memory only (not persisted to localStorage/sessionStorage)",
+    "refreshTokenStorage": "presumed httpOnly cookie (credentials: \"include\" used on all requests); not confirmed live, no valid credentials available",
+    "sessionIdHeader": "X-Session-ID",
+    "sessionIdStorage": "localStorage key \"session_id\", client-generated crypto.randomUUID(), required on cart endpoints (400 if missing), not issued by the server",
+    "notes": "Cart operations are authenticated by X-Session-ID only and work without login. Auth-required endpoints return 401 UNAUTHORIZED when the Authorization header is missing."
+  },
+  "responseEnvelopes": {
+    "success": {
+      "success": true,
+      "data": "endpoint-specific"
+    },
+    "businessError": {
+      "success": false,
+      "error": {
+        "code": "string",
+        "message": "string"
+      }
+    },
+    "validationError": {
+      "issues": "array of Zod issue objects",
+      "name": "ZodError"
+    }
+  },
+  "observedErrorCodes": [
+    "NOT_FOUND",
+    "UNAUTHORIZED",
+    "INVALID_CREDENTIALS",
+    "VALIDATION_ERROR"
+  ],
+  "httpMethods": {
+    "GET": "discovered",
+    "POST": "discovered",
+    "PUT": "not discovered",
+    "PATCH": "discovered",
+    "DELETE": "discovered",
+    "HEAD": "not discovered",
+    "OPTIONS": "attempted (returned 404, no explicit handler observed)"
+  },
+  "endpoints": [
+    {
+      "id": 1,
+      "resource": "Auth",
+      "method": "POST",
+      "path": "/auth/login",
+      "fullUrl": "https://qademo.com/api/auth/login",
+      "purpose": "Log in with username/password",
+      "authRequired": false,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "fields": [
+          {
+            "name": "username",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "required": true
+          }
+        ]
+      },
+      "responseBody": {
+        "success": "data: { accessToken: string, user: object } (inferred, not observed live)",
+        "error": "{ success: false, error: { code: 'INVALID_CREDENTIALS', message: string } } (verified live, HTTP 401)"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          400,
+          401
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Error paths (invalid credentials, missing fields) verified live. Success path not observed - no valid credentials available.",
+      "dependencies": [],
+      "notes": "Missing-field request returns a raw ZodError shape, not the standard error envelope.",
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "01 - Authentication",
+        "requestName": "POST - Login",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 2,
+      "resource": "Auth",
+      "method": "POST",
+      "path": "/auth/logout",
+      "fullUrl": "https://qademo.com/api/auth/logout",
+      "purpose": "Invalidate current session/token",
+      "authRequired": true,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": null,
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": false,
+      "verificationNote": "Determined from frontend source only; not exercised live.",
+      "dependencies": [
+        "Auth.login"
+      ],
+      "notes": "Clears in-memory accessToken client-side.",
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "01 - Authentication",
+        "requestName": "POST - Logout",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 3,
+      "resource": "Auth",
+      "method": "POST",
+      "path": "/auth/refresh",
+      "fullUrl": "https://qademo.com/api/auth/refresh",
+      "purpose": "Exchange refresh cookie for a new access token",
+      "authRequired": false,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "success": "data: { accessToken: string } (inferred)"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": false,
+      "verificationNote": "Determined from frontend source only; relies on a cookie not obtainable without a successful login.",
+      "dependencies": [
+        "Auth.login"
+      ],
+      "notes": "No request body; refresh token presumed to travel via cookie (credentials: include).",
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "01 - Authentication",
+        "requestName": "POST - Refresh Token",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 4,
+      "resource": "Auth",
+      "method": "GET",
+      "path": "/auth/me",
+      "fullUrl": "https://qademo.com/api/auth/me",
+      "purpose": "Get current authenticated user",
+      "authRequired": true,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "error": "{ success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live, HTTP 401)"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Unauthenticated 401 verified live. Success body not observed.",
+      "dependencies": [
+        "Auth.login"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "01 - Authentication",
+        "requestName": "GET - Get Current User",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 5,
+      "resource": "Products",
+      "method": "GET",
+      "path": "/products",
+      "fullUrl": "https://qademo.com/api/products",
+      "purpose": "List all products",
+      "authRequired": false,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "success": "data: [ { id: number, name: string, slug: string, description: string|null, price: number, stock: number, imageKey: string|null, imageUrl: string|null, isActive: boolean, createdAt: string, updatedAt: string } ]"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Verified live.",
+      "dependencies": [],
+      "notes": "No pagination/filter/sort query parameters observed.",
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "02 - Products",
+        "requestName": "GET - Get All Products",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 6,
+      "resource": "Products",
+      "method": "GET",
+      "path": "/products/{slug}",
+      "fullUrl": "https://qademo.com/api/products/{slug}",
+      "purpose": "Get a single product by slug",
+      "authRequired": false,
+      "pathParameters": [
+        {
+          "name": "slug",
+          "type": "string",
+          "example": "bluetooth-speaker",
+          "notes": "Numeric product id in this position returns 404 - the API expects the slug, not the id."
+        }
+      ],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "success": "data: { same product object shape as GET /products items }",
+        "error": "{ success: false, error: { code: 'NOT_FOUND', message: 'Product not found' } }"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          404
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Both success and 404 verified live.",
+      "dependencies": [
+        "Products.list"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "02 - Products",
+        "requestName": "GET - Get Product By Slug",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 7,
+      "resource": "Products",
+      "method": "POST",
+      "path": "/products",
+      "fullUrl": "https://qademo.com/api/products",
+      "purpose": "Create a product (admin)",
+      "authRequired": true,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "fields": "not determined - passed through as an opaque object in the frontend client"
+      },
+      "responseBody": null,
+      "expectedStatusCodes": {
+        "success": [
+          200,
+          201
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Only the unauthenticated 401 path was verified live to avoid creating data without confirming the schema.",
+      "dependencies": [
+        "Auth.login"
+      ],
+      "notes": "Body schema unknown; determine in Phase 3 with admin credentials.",
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "02 - Products",
+        "requestName": "POST - Create Product (Admin)",
+        "implementationStatus": "partial - request body schema undetermined"
+      }
+    },
+    {
+      "id": 8,
+      "resource": "Products",
+      "method": "PATCH",
+      "path": "/products/{id}",
+      "fullUrl": "https://qademo.com/api/products/{id}",
+      "purpose": "Update a product (admin)",
+      "authRequired": true,
+      "pathParameters": [
+        {
+          "name": "id",
+          "type": "number|string",
+          "notes": "Identifier type used by the frontend for update is not confirmed to be slug or numeric id; not exercised live."
+        }
+      ],
+      "queryParameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "fields": "not determined - passed through as an opaque object in the frontend client"
+      },
+      "responseBody": null,
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401,
+          404
+        ]
+      },
+      "verifiedLive": false,
+      "verificationNote": "Determined from frontend source only; not exercised live.",
+      "dependencies": [
+        "Products.create"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "02 - Products",
+        "requestName": "PATCH - Update Product (Admin)",
+        "implementationStatus": "partial - request body schema and id-type undetermined"
+      }
+    },
+    {
+      "id": 9,
+      "resource": "Products",
+      "method": "DELETE",
+      "path": "/products/{id}",
+      "fullUrl": "https://qademo.com/api/products/{id}",
+      "purpose": "Delete a product (admin)",
+      "authRequired": true,
+      "pathParameters": [
+        {
+          "name": "id",
+          "type": "number|string",
+          "notes": "Not exercised live."
+        }
+      ],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": null,
+      "expectedStatusCodes": {
+        "success": [
+          200,
+          204
+        ],
+        "error": [
+          401,
+          404
+        ]
+      },
+      "verifiedLive": false,
+      "verificationNote": "Determined from frontend source only; not exercised live.",
+      "dependencies": [
+        "Products.create"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "02 - Products",
+        "requestName": "DELETE - Delete Product (Admin)",
+        "implementationStatus": "implemented - id-type unconfirmed"
+      }
+    },
+    {
+      "id": 10,
+      "resource": "Cart",
+      "method": "GET",
+      "path": "/cart",
+      "fullUrl": "https://qademo.com/api/cart",
+      "purpose": "Get current session's cart",
+      "authRequired": false,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "success": "data: { items: [ { productId: number, quantity: number, product: object } ], totalItems: number, totalAmount: number }",
+        "error": "{ success: false, error: { code: 'VALIDATION_ERROR', message: 'Missing X-Session-ID header' } }"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          400
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Both success and missing-header 400 verified live.",
+      "dependencies": [],
+      "notes": "Requires X-Session-ID header, not Authorization. Works for guests.",
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "03 - Cart",
+        "requestName": "GET - Get Cart",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 11,
+      "resource": "Cart",
+      "method": "POST",
+      "path": "/cart/items",
+      "fullUrl": "https://qademo.com/api/cart/items",
+      "purpose": "Add an item to the cart",
+      "authRequired": false,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "fields": [
+          {
+            "name": "productId",
+            "type": "number",
+            "required": true
+          },
+          {
+            "name": "quantity",
+            "type": "number",
+            "required": false,
+            "default": 1
+          }
+        ]
+      },
+      "responseBody": {
+        "success": "data: { productId: number, quantity: number, totalItems: number }",
+        "error": "{ success: false, error: { code: 'NOT_FOUND', message: 'Product not found' } }"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          404
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Both success and invalid-productId 404 verified live.",
+      "dependencies": [
+        "Products.list",
+        "X-Session-ID"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "03 - Cart",
+        "requestName": "POST - Add Item To Cart",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 12,
+      "resource": "Cart",
+      "method": "PATCH",
+      "path": "/cart/items/{productId}",
+      "fullUrl": "https://qademo.com/api/cart/items/{productId}",
+      "purpose": "Update quantity of a cart item",
+      "authRequired": false,
+      "pathParameters": [
+        {
+          "name": "productId",
+          "type": "number",
+          "example": 4
+        }
+      ],
+      "queryParameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "fields": [
+          {
+            "name": "quantity",
+            "type": "number",
+            "required": true
+          }
+        ]
+      },
+      "responseBody": {
+        "success": "data: { productId: number, quantity: number, totalItems: number }"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Verified live.",
+      "dependencies": [
+        "Cart.addItem"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "03 - Cart",
+        "requestName": "PATCH - Update Cart Item Quantity",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 13,
+      "resource": "Cart",
+      "method": "DELETE",
+      "path": "/cart/items/{productId}",
+      "fullUrl": "https://qademo.com/api/cart/items/{productId}",
+      "purpose": "Remove an item from the cart",
+      "authRequired": false,
+      "pathParameters": [
+        {
+          "name": "productId",
+          "type": "number",
+          "example": 4
+        }
+      ],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "success": "data: { productId: number, removed: true, totalItems: number }"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Verified live.",
+      "dependencies": [
+        "Cart.addItem"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "03 - Cart",
+        "requestName": "DELETE - Remove Cart Item",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 14,
+      "resource": "Cart",
+      "method": "DELETE",
+      "path": "/cart",
+      "fullUrl": "https://qademo.com/api/cart",
+      "purpose": "Clear the entire cart",
+      "authRequired": false,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "success": "data: { cleared: true, totalItems: 0 }"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Verified live.",
+      "dependencies": [],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "03 - Cart",
+        "requestName": "DELETE - Clear Cart",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 15,
+      "resource": "Orders",
+      "method": "GET",
+      "path": "/orders",
+      "fullUrl": "https://qademo.com/api/orders",
+      "purpose": "List current user's orders",
+      "authRequired": true,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "error": "{ success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live, HTTP 401)"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Unauthenticated 401 verified live. Success body not observed.",
+      "dependencies": [
+        "Auth.login"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "04 - Orders",
+        "requestName": "GET - Get All Orders",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 16,
+      "resource": "Orders",
+      "method": "GET",
+      "path": "/orders/{id}",
+      "fullUrl": "https://qademo.com/api/orders/{id}",
+      "purpose": "Get a single order",
+      "authRequired": true,
+      "pathParameters": [
+        {
+          "name": "id",
+          "type": "number (presumed)"
+        }
+      ],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": null,
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401,
+          404
+        ]
+      },
+      "verifiedLive": false,
+      "verificationNote": "Determined from frontend source only; not exercised live.",
+      "dependencies": [
+        "Orders.create"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "04 - Orders",
+        "requestName": "GET - Get Order By ID",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 17,
+      "resource": "Orders",
+      "method": "POST",
+      "path": "/orders",
+      "fullUrl": "https://qademo.com/api/orders",
+      "purpose": "Create an order (checkout)",
+      "authRequired": true,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "fields": "not determined - passed through as an opaque object in the frontend client, presumed to derive from cart contents"
+      },
+      "responseBody": {
+        "error": "{ success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live, HTTP 401)"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200,
+          201
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Only the unauthenticated 401 path was verified live.",
+      "dependencies": [
+        "Auth.login",
+        "Cart"
+      ],
+      "notes": "Exact request body schema unknown; determine in Phase 3 with valid credentials.",
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "04 - Orders",
+        "requestName": "POST - Create Order",
+        "implementationStatus": "partial - request body schema undetermined"
+      }
+    },
+    {
+      "id": 18,
+      "resource": "Admin",
+      "method": "GET",
+      "path": "/admin/products",
+      "fullUrl": "https://qademo.com/api/admin/products",
+      "purpose": "List products (admin view)",
+      "authRequired": true,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "error": "{ success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live, HTTP 401)"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Unauthenticated 401 verified live. Success body not observed; admin-role enforcement (403 vs 401) not distinguished.",
+      "dependencies": [
+        "Auth.login (admin)"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "05 - Admin",
+        "requestName": "GET - Get Admin Products",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 19,
+      "resource": "Admin",
+      "method": "PATCH",
+      "path": "/admin/products/{id}/stock",
+      "fullUrl": "https://qademo.com/api/admin/products/{id}/stock",
+      "purpose": "Update product stock",
+      "authRequired": true,
+      "pathParameters": [
+        {
+          "name": "id",
+          "type": "number"
+        }
+      ],
+      "queryParameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "fields": [
+          {
+            "name": "stock",
+            "type": "number",
+            "required": true
+          }
+        ]
+      },
+      "responseBody": null,
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401,
+          404
+        ]
+      },
+      "verifiedLive": false,
+      "verificationNote": "Determined from frontend source only; not exercised live.",
+      "dependencies": [
+        "Auth.login (admin)",
+        "Products.create"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "05 - Admin",
+        "requestName": "PATCH - Update Product Stock",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 20,
+      "resource": "Admin",
+      "method": "GET",
+      "path": "/admin/orders",
+      "fullUrl": "https://qademo.com/api/admin/orders",
+      "purpose": "List all orders (admin)",
+      "authRequired": true,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": null,
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": false,
+      "verificationNote": "Determined from frontend source only; not exercised live.",
+      "dependencies": [
+        "Auth.login (admin)"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "05 - Admin",
+        "requestName": "GET - Get Admin Orders",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 21,
+      "resource": "Admin",
+      "method": "PATCH",
+      "path": "/admin/orders/{id}/status",
+      "fullUrl": "https://qademo.com/api/admin/orders/{id}/status",
+      "purpose": "Update order status",
+      "authRequired": true,
+      "pathParameters": [
+        {
+          "name": "id",
+          "type": "number"
+        }
+      ],
+      "queryParameters": [],
+      "requestBody": {
+        "contentType": "application/json",
+        "fields": [
+          {
+            "name": "status",
+            "type": "string",
+            "required": true,
+            "validValues": "not determined"
+          }
+        ]
+      },
+      "responseBody": null,
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401,
+          404
+        ]
+      },
+      "verifiedLive": false,
+      "verificationNote": "Determined from frontend source only; not exercised live.",
+      "dependencies": [
+        "Auth.login (admin)",
+        "Orders.create"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "05 - Admin",
+        "requestName": "PATCH - Update Order Status",
+        "implementationStatus": "implemented - valid status values undetermined"
+      }
+    },
+    {
+      "id": 22,
+      "resource": "Admin",
+      "method": "GET",
+      "path": "/admin/stats",
+      "fullUrl": "https://qademo.com/api/admin/stats",
+      "purpose": "Get dashboard statistics",
+      "authRequired": true,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": {
+        "error": "{ success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live, HTTP 401)"
+      },
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Unauthenticated 401 verified live. Success body not observed.",
+      "dependencies": [
+        "Auth.login (admin)"
+      ],
+      "notes": null,
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "05 - Admin",
+        "requestName": "GET - Get Admin Stats",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 23,
+      "resource": "Images",
+      "method": "POST",
+      "path": "/images",
+      "fullUrl": "https://qademo.com/api/images",
+      "purpose": "Upload an image",
+      "authRequired": true,
+      "pathParameters": [],
+      "queryParameters": [],
+      "requestBody": {
+        "contentType": "multipart/form-data",
+        "fields": [
+          {
+            "name": "file",
+            "type": "binary",
+            "required": true
+          },
+          {
+            "name": "folder",
+            "type": "string",
+            "required": false,
+            "default": "products"
+          }
+        ]
+      },
+      "responseBody": null,
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          401
+        ]
+      },
+      "verifiedLive": false,
+      "verificationNote": "Determined from frontend source only; not exercised live (requires admin auth, would upload a real file).",
+      "dependencies": [
+        "Auth.login (admin, presumed)"
+      ],
+      "notes": "Uploaded images are referenced by Product.imageKey/imageUrl.",
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "06 - Images",
+        "requestName": "POST - Upload Image",
+        "implementationStatus": "implemented"
+      }
+    },
+    {
+      "id": 24,
+      "resource": "Images",
+      "method": "GET",
+      "path": "/images/{folder}/{filename}",
+      "fullUrl": "https://qademo.com/api/images/{folder}/{filename}",
+      "purpose": "Serve an uploaded image (static asset)",
+      "authRequired": false,
+      "pathParameters": [
+        {
+          "name": "folder",
+          "type": "string",
+          "example": "products"
+        },
+        {
+          "name": "filename",
+          "type": "string",
+          "example": "1783414430049-e232a0f7.jpeg"
+        }
+      ],
+      "queryParameters": [],
+      "requestBody": null,
+      "responseBody": "binary image data",
+      "expectedStatusCodes": {
+        "success": [
+          200
+        ],
+        "error": [
+          404
+        ]
+      },
+      "verifiedLive": true,
+      "verificationNote": "Verified live (200 OK, image/jpeg, CORS *).",
+      "dependencies": [
+        "Images.upload"
+      ],
+      "notes": "Referenced by Product.imageUrl field, discovered via GET /products, not present in the frontend API client class.",
+      "postman": {
+        "implementedInPostman": true,
+        "collectionFolder": "06 - Images",
+        "requestName": "GET - Get Image",
+        "implementationStatus": "implemented"
+      }
+    }
+  ],
+  "crudMatrix": {
+    "Products": {
+      "create": "POST /products",
+      "read": [
+        "GET /products",
+        "GET /products/{slug}"
+      ],
+      "update": null,
+      "partialUpdate": "PATCH /products/{id}",
+      "delete": "DELETE /products/{id}"
+    },
+    "Cart": {
+      "create": "POST /cart/items",
+      "read": [
+        "GET /cart"
+      ],
+      "update": null,
+      "partialUpdate": "PATCH /cart/items/{productId}",
+      "delete": [
+        "DELETE /cart/items/{productId}",
+        "DELETE /cart"
+      ]
+    },
+    "Orders": {
+      "create": "POST /orders",
+      "read": [
+        "GET /orders",
+        "GET /orders/{id}"
+      ],
+      "update": null,
+      "partialUpdate": null,
+      "delete": null
+    },
+    "AdminProducts": {
+      "create": null,
+      "read": [
+        "GET /admin/products"
+      ],
+      "update": null,
+      "partialUpdate": "PATCH /admin/products/{id}/stock",
+      "delete": null
+    },
+    "AdminOrders": {
+      "create": null,
+      "read": [
+        "GET /admin/orders"
+      ],
+      "update": null,
+      "partialUpdate": "PATCH /admin/orders/{id}/status",
+      "delete": null
+    },
+    "AdminStats": {
+      "create": null,
+      "read": [
+        "GET /admin/stats"
+      ],
+      "update": null,
+      "partialUpdate": null,
+      "delete": null
+    },
+    "Images": {
+      "create": "POST /images",
+      "read": [
+        "GET /images/{folder}/{filename}"
+      ],
+      "update": null,
+      "partialUpdate": null,
+      "delete": null
+    },
+    "Auth": {
+      "create": "POST /auth/login",
+      "read": [
+        "GET /auth/me"
+      ],
+      "update": "POST /auth/refresh",
+      "partialUpdate": null,
+      "delete": "POST /auth/logout"
+    }
+  },
+  "resourceRelationships": [
+    {
+      "from": "Auth.login",
+      "to": "Auth.me",
+      "relationship": "requires accessToken"
+    },
+    {
+      "from": "Auth.login",
+      "to": "Orders.*",
+      "relationship": "requires accessToken"
+    },
+    {
+      "from": "Auth.login",
+      "to": "Admin.*",
+      "relationship": "requires accessToken (admin)"
+    },
+    {
+      "from": "Products.list",
+      "to": "Cart.addItem",
+      "relationship": "cart items reference numeric product id"
+    },
+    {
+      "from": "Cart",
+      "to": "Orders.create",
+      "relationship": "presumed: order created from cart contents at checkout (unconfirmed)"
+    },
+    {
+      "from": "Images.upload",
+      "to": "Products",
+      "relationship": "uploaded image referenced by product.imageKey/imageUrl"
+    }
+  ],
+  "discoveryLimitations": [
+    "No valid login credentials were available; success responses for login, auth/me, orders, admin/* and product/order create-update were not observed live.",
+    "Request body schemas for POST /orders, POST /products, and PATCH /products/{id} were not fully recoverable from the minified frontend client.",
+    "Admin vs. non-admin role enforcement (401 vs 403) could not be distinguished.",
+    "Refresh-token cookie attributes (name, httpOnly, Secure, SameSite, expiry) were not observable.",
+    "No pagination/filter/sort query parameters were found in the frontend client; server-side support for undocumented parameters cannot be ruled out.",
+    "Rate limiting and HEAD support were not tested.",
+    "Discovery used static bundle analysis plus direct curl requests, not a live browser network capture; runtime-conditional calls not present in reachable code paths may have been missed."
+  ]
+}

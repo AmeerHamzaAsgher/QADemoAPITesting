@@ -1,0 +1,787 @@
+{
+	"info": {
+		"_postman_id": "b0dce191-fdcd-4caa-b98f-8f150b84405b",
+		"name": "QA-Demo Project",
+		"description": "Purpose:\nProfessional API testing collection for the QA-Demo application.\n\nApplication:\nhttps://qademo.com/\n\nCurrent Phase:\nPhase 3 - Postman API Request Implementation\n\nAPI definitions:\nDerived from Phase 2 API Discovery (docs/API_DISCOVERY.md, docs/api-inventory.json). All requests, methods, headers, and bodies in this collection reflect only what was actually discovered/verified in Phase 2 - nothing is invented.\n\nAPI Base URL:\nhttps://qademo.com/api (environment variable {{apiUrl}})\n\nAuthentication:\nBearer access token (Authorization: Bearer {{authToken}}) for user/admin-protected endpoints, obtained from POST /auth/login. Cart endpoints instead require an X-Session-ID header ({{sessionId}}), independent of login state.\n\nThree endpoints (POST /products, PATCH /products/{id}, POST /orders) have a verified method/URL/auth requirement but an undetermined request body schema - see docs/POSTMAN_IMPLEMENTATION.md \"Unresolved / Partially Implemented APIs\" for details. No fields were invented for these.\n\nNo automated test assertions have been added yet - that is Phase 4.\n\nFuture phases:\nPhase 4 - API Test Automation\nPhase 5 - Data Chaining\nPhase 6 - Newman\nPhase 7 - Git/GitHub\nPhase 8 - GitHub Actions / CI/CD",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01 - Authentication",
+			"description": "Login, logout, token refresh, and current-user endpoints. Verified in Phase 2 API discovery (docs/API_DISCOVERY.md, section 'Authentication').",
+			"item": [
+				{
+					"name": "POST - Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{apiUrl}}/auth/login",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "auth", "login" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nLog in with a username and password.\n\nMethod:\nPOST\n\nEndpoint:\n/auth/login\n\nAuthentication:\nNot required.\n\nParameters:\nNone.\n\nBody (required, JSON):\n{ \"username\": string, \"password\": string } - both required (verified live via Zod validation error when omitted).\n\nExpected response:\n200 - { success: true, data: { accessToken, user } } (inferred, not observed live - no valid credentials were available during discovery).\n401 - { success: false, error: { code: 'INVALID_CREDENTIALS', message } } (verified live).\n400 - Zod validation error shape ({ issues: [...], name: 'ZodError' }) when required fields are missing (verified live).\n\nNote: on a successful login, manually copy the returned accessToken into the `authToken` environment variable to use the authenticated requests in this collection. Automated token chaining is planned for Phase 5."
+					},
+					"response": [
+						{
+							"name": "401 Invalid Credentials (verified live)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [ { "key": "Content-Type", "value": "application/json" } ],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"invalid_user\",\n  \"password\": \"invalid_pass\"\n}"
+								},
+								"url": { "raw": "{{apiUrl}}/auth/login", "host": [ "{{apiUrl}}" ], "path": [ "auth", "login" ] }
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"INVALID_CREDENTIALS\",\n    \"message\": \"Invalid username or password\"\n  }\n}"
+						},
+						{
+							"name": "400 Missing Fields (verified live)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [ { "key": "Content-Type", "value": "application/json" } ],
+								"body": { "mode": "raw", "raw": "{}" },
+								"url": { "raw": "{{apiUrl}}/auth/login", "host": [ "{{apiUrl}}" ], "path": [ "auth", "login" ] }
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"issues\": [\n    { \"code\": \"invalid_type\", \"expected\": \"string\", \"received\": \"undefined\", \"path\": [\"username\"], \"message\": \"Required\" },\n    { \"code\": \"invalid_type\", \"expected\": \"string\", \"received\": \"undefined\", \"path\": [\"password\"], \"message\": \"Required\" }\n  ],\n  \"name\": \"ZodError\"\n}"
+						}
+					]
+				},
+				{
+					"name": "POST - Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/auth/logout",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "auth", "logout" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nInvalidate the current session/access token.\n\nMethod:\nPOST\n\nEndpoint:\n/auth/logout\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred - determined from frontend source only, not exercised live).\n401 if no/invalid token.\n\nNote: not exercised live in Phase 2 to avoid invalidating a session without valid test credentials to re-authenticate."
+					},
+					"response": []
+				},
+				{
+					"name": "POST - Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/auth/refresh",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "auth", "refresh" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nExchange a refresh token (cookie) for a new access token.\n\nMethod:\nPOST\n\nEndpoint:\n/auth/refresh\n\nAuthentication:\nNone via header - relies on a same-origin cookie set during login (the frontend sends every request with credentials: \"include\"). Postman will send/receive cookies for this domain automatically if 'Send cookies' is enabled and a prior login was performed in the same session/cookie jar.\n\nParameters:\nNone.\n\nBody:\nNone (no request body is sent by the frontend client).\n\nExpected response:\n200 - { success: true, data: { accessToken } } (inferred, not observed live).\n401 if no valid refresh cookie is present.\n\nNote: refresh-token cookie attributes (name, httpOnly, Secure, SameSite, expiry) could not be determined in Phase 2 - no successful login was performed. See docs/API_DISCOVERY.md, Discovery Limitations."
+					},
+					"response": []
+				},
+				{
+					"name": "GET - Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/auth/me",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "auth", "me" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nGet the currently authenticated user.\n\nMethod:\nGET\n\nEndpoint:\n/auth/me\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { ...user object... } } (inferred, not observed live).\n401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live when no token is sent)."
+					},
+					"response": [
+						{
+							"name": "401 Missing Authentication (verified live)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": { "raw": "{{apiUrl}}/auth/me", "host": [ "{{apiUrl}}" ], "path": [ "auth", "me" ] }
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Missing authentication\"\n  }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "02 - Products",
+			"description": "Public product catalog endpoints and admin create/update/delete endpoints. Verified in Phase 2 API discovery.",
+			"item": [
+				{
+					"name": "GET - Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/products",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "products" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nList all products in the catalog.\n\nMethod:\nGET\n\nEndpoint:\n/products\n\nAuthentication:\nNot required.\n\nParameters:\nNone - no pagination/filter/sort query parameters were found in the frontend client (see Discovery Limitations).\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: [ { id, name, slug, description, price, stock, imageKey, imageUrl, isActive, createdAt, updatedAt } ] } (verified live)."
+					},
+					"response": [
+						{
+							"name": "200 OK (verified live, trimmed to one item)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": { "raw": "{{apiUrl}}/products", "host": [ "{{apiUrl}}" ], "path": [ "products" ] }
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 4,\n      \"name\": \"Bluetooth Speaker\",\n      \"slug\": \"bluetooth-speaker\",\n      \"description\": \"Portable Bluetooth speaker with 360-degree sound and 12-hour battery life.\",\n      \"price\": 159.99,\n      \"stock\": 1915,\n      \"imageKey\": \"products/1783414430049-e232a0f7.jpeg\",\n      \"imageUrl\": \"/api/images/products/1783414430049-e232a0f7.jpeg\",\n      \"isActive\": true,\n      \"createdAt\": \"2025-12-29 09:11:50\",\n      \"updatedAt\": \"2026-08-31 11:39:18\"\n    }\n  ]\n}"
+						}
+					]
+				},
+				{
+					"name": "GET - Get Product By Slug",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/products/{{productSlug}}",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "products", "{{productSlug}}" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nGet a single product by its slug.\n\nMethod:\nGET\n\nEndpoint:\n/products/{slug}\n\nAuthentication:\nNot required.\n\nParameters (path):\nslug (string) - the product's URL slug, e.g. 'bluetooth-speaker'. Verified live: a numeric product id in this position returns 404 - the API expects the slug, not the id.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { ...same shape as GET /products items... } } (verified live).\n404 - { success: false, error: { code: 'NOT_FOUND', message: 'Product not found' } } (verified live)."
+					},
+					"response": [
+						{
+							"name": "200 OK (verified live)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": { "raw": "{{apiUrl}}/products/bluetooth-speaker", "host": [ "{{apiUrl}}" ], "path": [ "products", "bluetooth-speaker" ] }
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 4,\n    \"name\": \"Bluetooth Speaker\",\n    \"slug\": \"bluetooth-speaker\",\n    \"description\": \"Portable Bluetooth speaker with 360-degree sound and 12-hour battery life.\",\n    \"price\": 159.99,\n    \"stock\": 1915,\n    \"imageKey\": \"products/1783414430049-e232a0f7.jpeg\",\n    \"imageUrl\": \"/api/images/products/1783414430049-e232a0f7.jpeg\",\n    \"isActive\": true,\n    \"createdAt\": \"2025-12-29 09:11:50\",\n    \"updatedAt\": \"2026-08-31 11:39:18\"\n  }\n}"
+						},
+						{
+							"name": "404 Not Found (verified live)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": { "raw": "{{apiUrl}}/products/4", "host": [ "{{apiUrl}}" ], "path": [ "products", "4" ] }
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Product not found\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "POST - Create Product (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  // Request body schema was NOT determined during Phase 2 discovery.\n  // The frontend client (createProduct) forwards an opaque object without\n  // exposing its field names in the minified bundle, and this endpoint was\n  // not exercised live (would create real, visible data without a confirmed\n  // schema). Do not invent fields here - populate this body only after\n  // confirming the real schema (e.g. via an authenticated admin session or\n  // server documentation). See docs/POSTMAN_IMPLEMENTATION.md.\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{apiUrl}}/products",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "products" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nCreate a new product (admin only).\n\nMethod:\nPOST\n\nEndpoint:\n/products\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nUNDETERMINED - see body comment. Only the unauthenticated 401 path was verified live in Phase 2.\n\nExpected response:\n200/201 (inferred).\n401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live).\n\nStatus: partially implemented - method/URL/auth confirmed, body schema unresolved. See docs/POSTMAN_IMPLEMENTATION.md."
+					},
+					"response": [
+						{
+							"name": "401 Missing Authentication (verified live)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [ { "key": "Content-Type", "value": "application/json" } ],
+								"body": { "mode": "raw", "raw": "{\"name\":\"test\"}" },
+								"url": { "raw": "{{apiUrl}}/products", "host": [ "{{apiUrl}}" ], "path": [ "products" ] }
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Missing authentication\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "PATCH - Update Product (Admin)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  // Request body schema was NOT determined during Phase 2 discovery.\n  // The frontend client (updateProduct) forwards an opaque object.\n  // Do not invent fields here. See docs/POSTMAN_IMPLEMENTATION.md.\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{apiUrl}}/products/{{productId}}",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "products", "{{productId}}" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nUpdate an existing product (admin only).\n\nMethod:\nPATCH\n\nEndpoint:\n/products/{id}\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid - it was NOT confirmed in Phase 2 whether this update endpoint expects the numeric id or the slug (unlike GET /products/{slug}, which is confirmed to use the slug). {{productId}} is used as a best-effort placeholder; verify against the real API before use.\n\nBody:\nUNDETERMINED - see body comment.\n\nExpected response:\n200 (inferred). 401/404 possible.\n\nStatus: not exercised live in Phase 2 (would mutate real catalog data with an unconfirmed identifier type and body schema). See docs/POSTMAN_IMPLEMENTATION.md."
+					},
+					"response": []
+				},
+				{
+					"name": "DELETE - Delete Product (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/products/{{productId}}",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "products", "{{productId}}" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nDelete a product (admin only).\n\nMethod:\nDELETE\n\nEndpoint:\n/products/{id}\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid - identifier type (slug vs numeric id) not confirmed for this endpoint; see note on the Update Product request.\n\nBody:\nNone.\n\nExpected response:\n200/204 (inferred). 401/404 possible.\n\nStatus: not exercised live in Phase 2 - this is a destructive operation and was not run against real catalog data without confirming the identifier type. This request is available for use but should not be run against production-like data without care."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03 - Cart",
+			"description": "Session-scoped shopping cart endpoints. Authenticated by the X-Session-ID header ({{sessionId}}), not by login - verified live to work for guest (unauthenticated) users. All requests in this folder were exercised live during Phase 2 discovery.",
+			"item": [
+				{
+					"name": "GET - Get Cart",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "X-Session-ID", "value": "{{sessionId}}" }
+						],
+						"url": {
+							"raw": "{{apiUrl}}/cart",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "cart" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nGet the current session's cart.\n\nMethod:\nGET\n\nEndpoint:\n/cart\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header (verified live: missing it returns 400 VALIDATION_ERROR).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { items: [ { productId, quantity, product } ], totalItems, totalAmount } } (verified live).\n400 - { success: false, error: { code: 'VALIDATION_ERROR', message: 'Missing X-Session-ID header' } } (verified live if header removed)."
+					},
+					"response": [
+						{
+							"name": "200 OK (verified live)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [ { "key": "X-Session-ID", "value": "{{sessionId}}" } ],
+								"url": { "raw": "{{apiUrl}}/cart", "host": [ "{{apiUrl}}" ], "path": [ "cart" ] }
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"items\": [\n      {\n        \"productId\": 4,\n        \"quantity\": 5,\n        \"product\": {\n          \"id\": 4,\n          \"name\": \"Bluetooth Speaker\",\n          \"slug\": \"bluetooth-speaker\",\n          \"price\": 159.99,\n          \"stock\": 1915\n        }\n      }\n    ],\n    \"totalItems\": 5,\n    \"totalAmount\": 799.95\n  }\n}"
+						},
+						{
+							"name": "400 Missing X-Session-ID (verified live)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": { "raw": "{{apiUrl}}/cart", "host": [ "{{apiUrl}}" ], "path": [ "cart" ] }
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Missing X-Session-ID header\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "POST - Add Item To Cart",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "X-Session-ID", "value": "{{sessionId}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productId\": {{productId}},\n  \"quantity\": 1\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{apiUrl}}/cart/items",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "cart", "items" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nAdd an item to the cart.\n\nMethod:\nPOST\n\nEndpoint:\n/cart/items\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters:\nNone.\n\nBody (required, JSON):\n{ \"productId\": number (required), \"quantity\": number (optional, client default 1) } - verified live.\n\nExpected response:\n200 - { success: true, data: { productId, quantity, totalItems } } (verified live).\n404 - { success: false, error: { code: 'NOT_FOUND', message: 'Product not found' } } if productId does not exist (verified live)."
+					},
+					"response": [
+						{
+							"name": "200 OK (verified live)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "X-Session-ID", "value": "{{sessionId}}" } ],
+								"body": { "mode": "raw", "raw": "{\n  \"productId\": 4,\n  \"quantity\": 1\n}" },
+								"url": { "raw": "{{apiUrl}}/cart/items", "host": [ "{{apiUrl}}" ], "path": [ "cart", "items" ] }
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"productId\": 4,\n    \"quantity\": 1,\n    \"totalItems\": 1\n  }\n}"
+						},
+						{
+							"name": "404 Product Not Found (verified live)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "X-Session-ID", "value": "{{sessionId}}" } ],
+								"body": { "mode": "raw", "raw": "{\n  \"productId\": 999999,\n  \"quantity\": 1\n}" },
+								"url": { "raw": "{{apiUrl}}/cart/items", "host": [ "{{apiUrl}}" ], "path": [ "cart", "items" ] }
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"NOT_FOUND\",\n    \"message\": \"Product not found\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "PATCH - Update Cart Item Quantity",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" },
+							{ "key": "X-Session-ID", "value": "{{sessionId}}" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 5\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{apiUrl}}/cart/items/{{productId}}",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "cart", "items", "{{productId}}" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nUpdate the quantity of an existing cart item.\n\nMethod:\nPATCH\n\nEndpoint:\n/cart/items/{productId}\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters (path):\nproductId (number) - the product's numeric id, e.g. 4 (verified live; note this differs from GET /products/{slug} which uses the slug).\n\nBody (required, JSON):\n{ \"quantity\": number (required) } - verified live.\n\nExpected response:\n200 - { success: true, data: { productId, quantity, totalItems } } (verified live)."
+					},
+					"response": [
+						{
+							"name": "200 OK (verified live)",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "X-Session-ID", "value": "{{sessionId}}" } ],
+								"body": { "mode": "raw", "raw": "{\n  \"quantity\": 5\n}" },
+								"url": { "raw": "{{apiUrl}}/cart/items/4", "host": [ "{{apiUrl}}" ], "path": [ "cart", "items", "4" ] }
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"productId\": 4,\n    \"quantity\": 5,\n    \"totalItems\": 5\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "DELETE - Remove Cart Item",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "X-Session-ID", "value": "{{sessionId}}" }
+						],
+						"url": {
+							"raw": "{{apiUrl}}/cart/items/{{productId}}",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "cart", "items", "{{productId}}" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nRemove a single item from the cart.\n\nMethod:\nDELETE\n\nEndpoint:\n/cart/items/{productId}\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters (path):\nproductId (number) - verified live.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { productId, removed: true, totalItems } } (verified live)."
+					},
+					"response": [
+						{
+							"name": "200 OK (verified live)",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [ { "key": "X-Session-ID", "value": "{{sessionId}}" } ],
+								"url": { "raw": "{{apiUrl}}/cart/items/4", "host": [ "{{apiUrl}}" ], "path": [ "cart", "items", "4" ] }
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"productId\": 4,\n    \"removed\": true,\n    \"totalItems\": 0\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "DELETE - Clear Cart",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{ "key": "X-Session-ID", "value": "{{sessionId}}" }
+						],
+						"url": {
+							"raw": "{{apiUrl}}/cart",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "cart" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nRemove all items from the cart.\n\nMethod:\nDELETE\n\nEndpoint:\n/cart\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { cleared: true, totalItems: 0 } } (verified live)."
+					},
+					"response": [
+						{
+							"name": "200 OK (verified live)",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [ { "key": "X-Session-ID", "value": "{{sessionId}}" } ],
+								"url": { "raw": "{{apiUrl}}/cart", "host": [ "{{apiUrl}}" ], "path": [ "cart" ] }
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": true,\n  \"data\": {\n    \"cleared\": true,\n    \"totalItems\": 0\n  }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "04 - Orders",
+			"description": "Authenticated order endpoints. GET requests' auth requirement verified live; POST /orders body schema is undetermined.",
+			"item": [
+				{
+					"name": "GET - Get All Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/orders",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "orders" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nList the authenticated user's orders.\n\nMethod:\nGET\n\nEndpoint:\n/orders\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred, not observed live). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live)."
+					},
+					"response": [
+						{
+							"name": "401 Missing Authentication (verified live)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": { "raw": "{{apiUrl}}/orders", "host": [ "{{apiUrl}}" ], "path": [ "orders" ] }
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Missing authentication\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "GET - Get Order By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/orders/{{orderId}}",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "orders", "{{orderId}}" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nGet a single order by id.\n\nMethod:\nGET\n\nEndpoint:\n/orders/{id}\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters (path):\nid (number, presumed) - not confirmed live; determined from frontend source only.\n\nBody:\nNone.\n\nExpected response:\n200/404 (inferred). Not exercised live in Phase 2 - requires an authenticated session and an existing order id, neither of which were available."
+					},
+					"response": []
+				},
+				{
+					"name": "POST - Create Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  // Request body schema was NOT determined during Phase 2 discovery.\n  // The frontend client (createOrder) forwards an opaque object, presumed\n  // to be derived from the current cart contents at checkout, but the\n  // exact field names/shape were not recoverable from the minified bundle\n  // and this endpoint was not exercised live beyond the auth check.\n  // Do not invent fields here. See docs/POSTMAN_IMPLEMENTATION.md.\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{apiUrl}}/orders",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "orders" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nCreate an order (checkout).\n\nMethod:\nPOST\n\nEndpoint:\n/orders\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nUNDETERMINED - see body comment.\n\nExpected response:\n200/201 (inferred). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live).\n\nStatus: partially implemented - method/URL/auth confirmed, body schema unresolved. See docs/POSTMAN_IMPLEMENTATION.md."
+					},
+					"response": [
+						{
+							"name": "401 Missing Authentication (verified live)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [ { "key": "Content-Type", "value": "application/json" } ],
+								"body": { "mode": "raw", "raw": "{}" },
+								"url": { "raw": "{{apiUrl}}/orders", "host": [ "{{apiUrl}}" ], "path": [ "orders" ] }
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Missing authentication\"\n  }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "05 - Admin",
+			"description": "Admin-only product/order management and dashboard statistics. Auth requirement verified live for all GET endpoints; PATCH bodies determined from frontend source only (not exercised live - require admin credentials).",
+			"item": [
+				{
+					"name": "GET - Get Admin Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/admin/products",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "admin", "products" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nList products from the admin view.\n\nMethod:\nGET\n\nEndpoint:\n/admin/products\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live). Note: 403-vs-401 for a non-admin authenticated user was not distinguishable in Phase 2."
+					},
+					"response": [
+						{
+							"name": "401 Missing Authentication (verified live)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": { "raw": "{{apiUrl}}/admin/products", "host": [ "{{apiUrl}}" ], "path": [ "admin", "products" ] }
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Missing authentication\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "PATCH - Update Product Stock",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"stock\": 100\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{apiUrl}}/admin/products/{{productId}}/stock",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "admin", "products", "{{productId}}", "stock" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nUpdate a product's stock level (admin only).\n\nMethod:\nPATCH\n\nEndpoint:\n/admin/products/{id}/stock\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid (number) - the product's numeric id.\n\nBody (JSON, determined from frontend source):\n{ \"stock\": number (required) }\n\nExpected response:\n200 (inferred). 401/404 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials)."
+					},
+					"response": []
+				},
+				{
+					"name": "GET - Get Admin Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/admin/orders",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "admin", "orders" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nList all orders (admin only).\n\nMethod:\nGET\n\nEndpoint:\n/admin/orders\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred). 401 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials)."
+					},
+					"response": []
+				},
+				{
+					"name": "PATCH - Update Order Status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"shipped\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{apiUrl}}/admin/orders/{{orderId}}/status",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "admin", "orders", "{{orderId}}", "status" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nUpdate an order's status (admin only).\n\nMethod:\nPATCH\n\nEndpoint:\n/admin/orders/{id}/status\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid (number) - the order's id.\n\nBody (JSON, determined from frontend source):\n{ \"status\": string (required) } - the set of valid status values (e.g. pending/shipped/delivered/cancelled) was NOT determined in Phase 2. The example value 'shipped' is illustrative only, not a confirmed valid value - verify before use.\n\nExpected response:\n200 (inferred). 401/404 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials and an existing order)."
+					},
+					"response": []
+				},
+				{
+					"name": "GET - Get Admin Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/admin/stats",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "admin", "stats" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nGet admin dashboard statistics.\n\nMethod:\nGET\n\nEndpoint:\n/admin/stats\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live)."
+					},
+					"response": [
+						{
+							"name": "401 Missing Authentication (verified live)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": { "raw": "{{apiUrl}}/admin/stats", "host": [ "{{apiUrl}}" ], "path": [ "admin", "stats" ] }
+							},
+							"status": "Unauthorized",
+							"code": 401,
+							"_postman_previewlanguage": "json",
+							"header": [ { "key": "Content-Type", "value": "application/json" } ],
+							"body": "{\n  \"success\": false,\n  \"error\": {\n    \"code\": \"UNAUTHORIZED\",\n    \"message\": \"Missing authentication\"\n  }\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "06 - Images",
+			"description": "Image upload (admin) and static image serving. GET verified live; POST determined from frontend source only.",
+			"item": [
+				{
+					"name": "POST - Upload Image",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "file", "type": "file", "src": [] },
+								{ "key": "folder", "value": "products", "type": "text" }
+							]
+						},
+						"url": {
+							"raw": "{{apiUrl}}/images",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "images" ]
+						},
+						"auth": {
+							"type": "bearer",
+							"bearer": [ { "key": "token", "value": "{{authToken}}", "type": "string" } ]
+						},
+						"description": "Purpose:\nUpload an image (used for product images).\n\nMethod:\nPOST\n\nEndpoint:\n/images\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody (multipart/form-data, determined from frontend source):\nfile (binary, required), folder (string, optional, default 'products').\n\nExpected response:\n200 (inferred). 401 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials and would upload a real file). Select a local file in the 'file' field before sending."
+					},
+					"response": []
+				},
+				{
+					"name": "GET - Get Image",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiUrl}}/images/{{imageFolder}}/{{imageFilename}}",
+							"host": [ "{{apiUrl}}" ],
+							"path": [ "images", "{{imageFolder}}", "{{imageFilename}}" ]
+						},
+						"auth": { "type": "noauth" },
+						"description": "Purpose:\nServe a previously uploaded image (static asset).\n\nMethod:\nGET\n\nEndpoint:\n/images/{folder}/{filename}\n\nAuthentication:\nNot required.\n\nParameters (path):\nfolder (string, e.g. 'products'), filename (string) - verified live using a real image referenced by a product's imageUrl field.\n\nBody:\nNone.\n\nExpected response:\n200 - binary image data (Content-Type: image/*, CORS Access-Control-Allow-Origin: *) (verified live).\n404 if the file does not exist (not exercised, inferred from standard static-asset behavior)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "07 - Negative Tests",
+			"item": [],
+			"description": "Reserved for Phase 4 - API Test Automation. Phase 2 discovery already surfaced several negative scenarios (missing X-Session-ID, invalid login credentials, missing auth, unknown product slug/id) which are captured as response examples on the relevant requests above. Formal negative-test requests with assertions will be added in Phase 4."
+		},
+		{
+			"name": "08 - Cleanup",
+			"item": [],
+			"description": "Reserved for future phases. Delete/clear operations for resources actually created during test runs (e.g. deleting a test product, clearing a test cart) already exist as individual requests in their respective resource folders (02 - Products, 03 - Cart). Phase 5 (Data Chaining) will sequence create -> use -> cleanup flows; this folder remains empty until then."
+		}
+	]
+}

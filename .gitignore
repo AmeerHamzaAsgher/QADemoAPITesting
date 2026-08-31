@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Newman / test reports
+reports/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Note:
+# postman/collections/, postman/environments/, prompts/, and docs/ are
+# intentionally NOT ignored — they are core, version-controlled project assets.

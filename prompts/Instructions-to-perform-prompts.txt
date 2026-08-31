@@ -1,0 +1,11 @@
+Prompt for phase-2
+Before executing Phase 2, inspect the current project.
+
+1. Confirm the current working directory.
+2. Inspect the project structure.
+3. Confirm that `prompts/phase-1-project-scaffolding.md` exists.
+4. Confirm that `prompts/phase-2-api-discovery.md` exists.
+5. Inspect the Phase 1 Postman collection and environment if they exist.
+6. Do not modify anything yet.
+
+Report what you found and wait for my confirmation.
