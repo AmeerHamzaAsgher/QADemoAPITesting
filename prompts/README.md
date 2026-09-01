@@ -40,6 +40,7 @@ This project is built incrementally, one phase at a time (see `docs/PROJECT_PHAS
 * **Phase 5.1** (`phase-5.1-postman-ui-organization.md`) — **completed** — reorganized the Postman collection's presentation only (request/folder descriptions, a "Tests:" summary on every Phase 3/4 request, a professional collection description, and removal of one empty leftover folder with renumbering). Zero functional change - verified by a field-level diff (method/url/header/body/auth/scripts) and by re-running the Phase 4/5 live-verification harnesses with identical results. Results are in `docs/POSTMAN_UI_ARCHITECTURE.md`.
 * **Phase 6** (`phase-6-newman-automation.md`) — **completed** — added command-line execution via Newman: `package.json` with `npm test` and per-workflow scripts, HTML reporting into `reports/`, and verified exit-code behavior (0 on success, non-zero on failure, confirmed by deliberately forcing a failure). Discovered and documented a Newman-specific compatibility finding (`pm.execution.setNextRequest(null)` stops the entire run, not just a folder) and designed the npm scripts around it without changing any collection content. No CI/CD was implemented. Results are in `docs/NEWMAN_API_AUTOMATION.md`.
 * **Phase 7** (`phase-7-github-integration.md`) — **completed** — reviewed the existing Git repository and GitHub remote (both pre-existing from the Phase 3 push - neither was recreated), tightened `.gitignore`, verified no secrets are tracked, and committed/pushed the outstanding Phase 4-7 work to `origin/main`. No force-push, no history rewrite, no new repository. No CI/CD was implemented. Results are in `docs/GIT_GITHUB_WORKFLOW.md`.
+* **Phase 8** (`phase-8-github-actions-cicd.md`) — **completed** — added `.github/workflows/api-tests.yml` ("QA-Demo API Tests"), running the existing `npm test` command automatically on push/pull-request via GitHub Actions (Node 20.x, `npm ci`, no secrets needed), with HTML reports uploaded as a build artifact and a failing assertion correctly failing the CI job. No new test framework, deployment, or Docker was introduced. Results are in `docs/GITHUB_ACTIONS_CICD.md`.
 
 ## Current Prompt Files
 
@@ -54,6 +55,7 @@ prompts/
 ├── phase-5.1-postman-ui-organization.md
 ├── phase-6-newman-automation.md
 ├── phase-7-github-integration.md
+├── phase-8-github-actions-cicd.md
 └── README.md
 ```
 

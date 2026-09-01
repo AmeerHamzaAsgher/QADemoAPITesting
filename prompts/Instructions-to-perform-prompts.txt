@@ -253,5 +253,27 @@ Do not implement GitHub Actions or CI/CD yet.
 Provide the final Git/GitHub verification report and STOP.
 
 ---------------------------------------------------------------
+8. Prompt for phase 8
+Execute **Phase 8 — GitHub Actions CI/CD**.
+
+Read and follow `prompts/phase-8-github-actions-cicd.md`.
+
+First verify that Phase 6 Newman automation and Phase 7 Git/GitHub integration work correctly.
+
+Create `.github/workflows/api-tests.yml` using the existing `npm test` / Newman framework.
+
+Preserve all existing Postman, Phase 4, Phase 5, and Newman functionality.
+
+Configure push and pull-request triggers, Node.js, dependency installation, Newman execution, failure handling, and test-report artifacts.
+
+Do not hardcode secrets.
+
+Review the workflow locally, commit the changes, and push to the existing GitHub repository.
+
+Then verify the workflow in GitHub Actions and provide the final Phase 8 validation report.
+
+Do not add deployment or other unrelated automation.
+
+STOP after Phase 8.
 
 
