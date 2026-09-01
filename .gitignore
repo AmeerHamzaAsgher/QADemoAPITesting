@@ -9,8 +9,11 @@ node_modules/
 *.log
 npm-debug.log*
 
-# Newman / test reports
-reports/
+# Newman / test reports (keep the directory itself, ignore generated report files)
+reports/*
+!reports/.gitkeep
+
+# npm note: package-lock.json is intentionally NOT ignored below (kept for reproducible installs)
 
 # OS files
 .DS_Store

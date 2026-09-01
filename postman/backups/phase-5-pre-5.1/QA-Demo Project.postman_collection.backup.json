@@ -2,13 +2,13 @@
   "info": {
     "_postman_id": "b0dce191-fdcd-4caa-b98f-8f150b84405b",
     "name": "QA-Demo Project",
-    "description": "Application:\nQA-Demo (https://qademo.com/)\n\nCollection:\nQA-Demo Project\n\nEnvironment:\nQA-Demo Environment\n\nPurpose:\nAutomated API testing for the QA-Demo e-commerce application - request implementation, test assertions, and dynamic data-chaining workflows, all derived exclusively from verified, live API discovery (nothing invented).\n\nCurrent phases:\nPhase 1 - Project Scaffolding: completed\nPhase 2 - API Discovery & Analysis: completed\nPhase 3 - Postman API Request Implementation: completed\nPhase 4 - API Test Automation: completed\nPhase 5 - API Data Chaining & Workflow Automation: completed\nPhase 5.1 - Postman UI Organization: completed (this phase - presentation/organization only, no functional changes)\n\nAutomation:\nPostman pm.test() assertions on every request (133 request-level + 1 collection-level response-time check) and 4 chained, dynamic-data-driven workflows (16 additional requests) in the '08 - Workflows' folder. No Newman/CI automation yet - that is a later phase.\n\nCollection structure:\n01 Authentication, 02 Products, 03 Cart, 04 Orders, 05 Admin, 06 Images, 07 Negative Tests, 08 Workflows. See docs/POSTMAN_UI_ARCHITECTURE.md for the full navigation guide.\n\n---\n\nPurpose:\nProfessional API testing collection for the QA-Demo application.\n\nApplication:\nhttps://qademo.com/\n\nCurrent Phase:\nPhase 4 - API Test Automation\n\nAPI definitions:\nDerived from Phase 2 API Discovery (docs/API_DISCOVERY.md, docs/api-inventory.json). All requests, methods, headers, and bodies in this collection reflect only what was actually discovered/verified - nothing is invented.\n\nAPI Base URL:\nhttps://qademo.com/api (environment variable {{apiUrl}})\n\nAuthentication:\nBearer access token (Authorization: Bearer {{authToken}}) for user/admin-protected endpoints, obtained from POST /auth/login. Cart endpoints instead require an X-Session-ID header ({{sessionId}}), independent of login state.\n\nTest automation (Phase 4):\nAll 24 Phase 3 requests now carry request-level pm.test() assertions covering status codes, response time, Content-Type, response structure, required fields, data types, and (where the API is stateless/public) request/response consistency. A collection-level test enforces a 3000ms response-time budget on every request. Endpoints whose authenticated success response could not be observed live (no test credentials were available) use conditional assertions that validate the currently-reproducible unauthenticated/error path exactly, and validate only the presence of a plausible success shape if a token is later supplied - see docs/API_TEST_AUTOMATION.md.\n\nA new '07 - Negative Tests' folder holds 14 dedicated, deterministic negative/boundary requests (missing/invalid fields, invalid types, unknown ids, boundary quantity values, missing auth) verified live during Phase 4 - some are new findings not previously captured in Phase 2 (e.g. cart quantity must be > 0 on add, >= 0 on update).\n\nThree endpoints (POST /products, PATCH /products/{id}, POST /orders) still have a verified method/URL/auth requirement but an undetermined request body schema - see docs/POSTMAN_IMPLEMENTATION.md. Their tests validate only the authentication requirement.\n\nNo dynamic data chaining (auto-populating tokens/ids between requests) has been implemented - that is Phase 5.\n\nFuture phases:\nPhase 5 - Data Chaining\nPhase 6 - Newman\nPhase 7 - Git/GitHub\nPhase 8 - GitHub Actions / CI/CD",
+    "description": "Purpose:\nProfessional API testing collection for the QA-Demo application.\n\nApplication:\nhttps://qademo.com/\n\nCurrent Phase:\nPhase 4 - API Test Automation\n\nAPI definitions:\nDerived from Phase 2 API Discovery (docs/API_DISCOVERY.md, docs/api-inventory.json). All requests, methods, headers, and bodies in this collection reflect only what was actually discovered/verified - nothing is invented.\n\nAPI Base URL:\nhttps://qademo.com/api (environment variable {{apiUrl}})\n\nAuthentication:\nBearer access token (Authorization: Bearer {{authToken}}) for user/admin-protected endpoints, obtained from POST /auth/login. Cart endpoints instead require an X-Session-ID header ({{sessionId}}), independent of login state.\n\nTest automation (Phase 4):\nAll 24 Phase 3 requests now carry request-level pm.test() assertions covering status codes, response time, Content-Type, response structure, required fields, data types, and (where the API is stateless/public) request/response consistency. A collection-level test enforces a 3000ms response-time budget on every request. Endpoints whose authenticated success response could not be observed live (no test credentials were available) use conditional assertions that validate the currently-reproducible unauthenticated/error path exactly, and validate only the presence of a plausible success shape if a token is later supplied - see docs/API_TEST_AUTOMATION.md.\n\nA new '07 - Negative Tests' folder holds 14 dedicated, deterministic negative/boundary requests (missing/invalid fields, invalid types, unknown ids, boundary quantity values, missing auth) verified live during Phase 4 - some are new findings not previously captured in Phase 2 (e.g. cart quantity must be > 0 on add, >= 0 on update).\n\nThree endpoints (POST /products, PATCH /products/{id}, POST /orders) still have a verified method/URL/auth requirement but an undetermined request body schema - see docs/POSTMAN_IMPLEMENTATION.md. Their tests validate only the authentication requirement.\n\nNo dynamic data chaining (auto-populating tokens/ids between requests) has been implemented - that is Phase 5.\n\nFuture phases:\nPhase 5 - Data Chaining\nPhase 6 - Newman\nPhase 7 - Git/GitHub\nPhase 8 - GitHub Actions / CI/CD",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "01 - Authentication",
-      "description": "Login, logout, token refresh, and current-user endpoints.\n\nContains: 4 requests covering the full authentication surface discovered in Phase 2 (docs/API_DISCOVERY.md, section 'Authentication'). Each request's Tests summary (in its own description) lists exactly what is validated - status code, error-envelope shape, and, where reachable without credentials, the success-path shape.",
+      "description": "Login, logout, token refresh, and current-user endpoints. Verified in Phase 2 API discovery (docs/API_DISCOVERY.md, section 'Authentication').",
       "item": [
         {
           "name": "POST - Login",
@@ -42,7 +42,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nLog in with a username and password.\n\nMethod:\nPOST\n\nEndpoint:\n/auth/login\n\nAuthentication:\nNot required.\n\nParameters:\nNone.\n\nBody (required, JSON):\n{ \"username\": string, \"password\": string } - both required (verified live via Zod validation error when omitted).\n\nExpected response:\n200 - { success: true, data: { accessToken, user } } (inferred, not observed live - no valid credentials were available during discovery).\n401 - { success: false, error: { code: 'INVALID_CREDENTIALS', message } } (verified live).\n400 - Zod validation error, wrapped in the standard error envelope: { success: false, error: { issues: [...], name: 'ZodError' } } when required fields are missing (verified live; corrected in Phase 4 - Phase 2/3 had documented this as a top-level, unwrapped shape).\n\nNote: on a successful login, manually copy the returned accessToken into the `authToken` environment variable to use the authenticated requests in this collection. Automated token chaining is planned for Phase 5.\n\nTests:\n- Response is valid JSON\n- Status code is 400 when required login fields are missing/invalid\n- 400 response is a ZodError with an issues array\n- Status code is 401 for invalid credentials\n- 401 response uses the standard error envelope\n- Status code is 200 for successful login\n- Successful login returns success=true and an accessToken\n- Response Content-Type is JSON\n- Login returned an undocumented status code ("
+            "description": "Purpose:\nLog in with a username and password.\n\nMethod:\nPOST\n\nEndpoint:\n/auth/login\n\nAuthentication:\nNot required.\n\nParameters:\nNone.\n\nBody (required, JSON):\n{ \"username\": string, \"password\": string } - both required (verified live via Zod validation error when omitted).\n\nExpected response:\n200 - { success: true, data: { accessToken, user } } (inferred, not observed live - no valid credentials were available during discovery).\n401 - { success: false, error: { code: 'INVALID_CREDENTIALS', message } } (verified live).\n400 - Zod validation error, wrapped in the standard error envelope: { success: false, error: { issues: [...], name: 'ZodError' } } when required fields are missing (verified live; corrected in Phase 4 - Phase 2/3 had documented this as a top-level, unwrapped shape).\n\nNote: on a successful login, manually copy the returned accessToken into the `authToken` environment variable to use the authenticated requests in this collection. Automated token chaining is planned for Phase 5."
           },
           "response": [
             {
@@ -196,7 +196,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nInvalidate the current session/access token.\n\nMethod:\nPOST\n\nEndpoint:\n/auth/logout\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred - determined from frontend source only, not exercised live).\n401 if no/invalid token.\n\nNote: not exercised live in Phase 2 to avoid invalidating a session without valid test credentials to re-authenticate.\n\nTests:\n- Status code is 200\n- Response Content-Type is JSON\n- Response indicates successful logout"
+            "description": "Purpose:\nInvalidate the current session/access token.\n\nMethod:\nPOST\n\nEndpoint:\n/auth/logout\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred - determined from frontend source only, not exercised live).\n401 if no/invalid token.\n\nNote: not exercised live in Phase 2 to avoid invalidating a session without valid test credentials to re-authenticate."
           },
           "response": [],
           "event": [
@@ -246,7 +246,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nExchange a refresh token (cookie) for a new access token.\n\nMethod:\nPOST\n\nEndpoint:\n/auth/refresh\n\nAuthentication:\nNone via header - relies on a same-origin cookie set during login (the frontend sends every request with credentials: \"include\"). Postman will send/receive cookies for this domain automatically if 'Send cookies' is enabled and a prior login was performed in the same session/cookie jar.\n\nParameters:\nNone.\n\nBody:\nNone (no request body is sent by the frontend client).\n\nExpected response:\n200 - { success: true, data: { accessToken } } (inferred, not observed live).\n401 if no valid refresh cookie is present.\n\nNote: refresh-token cookie attributes (name, httpOnly, Secure, SameSite, expiry) could not be determined in Phase 2 - no successful login was performed. See docs/API_DISCOVERY.md, Discovery Limitations.\n\nTests:\n- Status code is 401 without a valid refresh cookie\n- 401 response uses the standard error envelope\n- Status code is 200 when a valid refresh cookie is present\n- Successful refresh returns a new accessToken\n- Refresh Token returned an undocumented status code ("
+            "description": "Purpose:\nExchange a refresh token (cookie) for a new access token.\n\nMethod:\nPOST\n\nEndpoint:\n/auth/refresh\n\nAuthentication:\nNone via header - relies on a same-origin cookie set during login (the frontend sends every request with credentials: \"include\"). Postman will send/receive cookies for this domain automatically if 'Send cookies' is enabled and a prior login was performed in the same session/cookie jar.\n\nParameters:\nNone.\n\nBody:\nNone (no request body is sent by the frontend client).\n\nExpected response:\n200 - { success: true, data: { accessToken } } (inferred, not observed live).\n401 if no valid refresh cookie is present.\n\nNote: refresh-token cookie attributes (name, httpOnly, Secure, SameSite, expiry) could not be determined in Phase 2 - no successful login was performed. See docs/API_DISCOVERY.md, Discovery Limitations."
           },
           "response": [],
           "event": [
@@ -309,7 +309,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nGet the currently authenticated user.\n\nMethod:\nGET\n\nEndpoint:\n/auth/me\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { ...user object... } } (inferred, not observed live).\n401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live when no token is sent).\n\nTests:\n- Status code is 401 when no access token is provided\n- 401 response uses the standard error envelope\n- Status code is 200 for an authenticated user\n- Response contains a user object\n- Get Current User returned an undocumented status code ("
+            "description": "Purpose:\nGet the currently authenticated user.\n\nMethod:\nGET\n\nEndpoint:\n/auth/me\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { ...user object... } } (inferred, not observed live).\n401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live when no token is sent)."
           },
           "response": [
             {
@@ -379,7 +379,7 @@
     },
     {
       "name": "02 - Products",
-      "description": "Public product catalog (list, get by slug) plus admin create/update/delete endpoints.\n\nContains: 5 requests. List and Get-by-Slug are fully public and fully tested. Create/Update/Delete require admin authentication; Create and Update additionally have an undetermined request body schema (Phase 2/3 finding) - see docs/POSTMAN_IMPLEMENTATION.md.",
+      "description": "Public product catalog endpoints and admin create/update/delete endpoints. Verified in Phase 2 API discovery.",
       "item": [
         {
           "name": "GET - Get All Products",
@@ -398,7 +398,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nList all products in the catalog.\n\nMethod:\nGET\n\nEndpoint:\n/products\n\nAuthentication:\nNot required.\n\nParameters:\nNone - no pagination/filter/sort query parameters were found in the frontend client (see Discovery Limitations).\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: [ { id, name, slug, description, price, stock, imageKey, imageUrl, isActive, createdAt, updatedAt } ] } (verified live).\n\nTests:\n- Status code is 200\n- Response Content-Type is JSON\n- Response has success=true and a data array\n- Each product has the expected fields and types\n- Product prices and stock are not negative\n- Response matches the expected products list schema"
+            "description": "Purpose:\nList all products in the catalog.\n\nMethod:\nGET\n\nEndpoint:\n/products\n\nAuthentication:\nNot required.\n\nParameters:\nNone - no pagination/filter/sort query parameters were found in the frontend client (see Discovery Limitations).\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: [ { id, name, slug, description, price, stock, imageKey, imageUrl, isActive, createdAt, updatedAt } ] } (verified live)."
           },
           "response": [
             {
@@ -516,7 +516,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nGet a single product by its slug.\n\nMethod:\nGET\n\nEndpoint:\n/products/{slug}\n\nAuthentication:\nNot required.\n\nParameters (path):\nslug (string) - the product's URL slug, e.g. 'bluetooth-speaker'. Verified live: a numeric product id in this position returns 404 - the API expects the slug, not the id.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { ...same shape as GET /products items... } } (verified live).\n404 - { success: false, error: { code: 'NOT_FOUND', message: 'Product not found' } } (verified live).\n\nTests:\n- Status code is 200 for a known slug\n- Returned product matches the requested slug\n- Product object has expected fields and types\n- Status code is 404 for an unknown slug\n- 404 response uses the standard error envelope\n- Get Product By Slug returned an undocumented status code ("
+            "description": "Purpose:\nGet a single product by its slug.\n\nMethod:\nGET\n\nEndpoint:\n/products/{slug}\n\nAuthentication:\nNot required.\n\nParameters (path):\nslug (string) - the product's URL slug, e.g. 'bluetooth-speaker'. Verified live: a numeric product id in this position returns 404 - the API expects the slug, not the id.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { ...same shape as GET /products items... } } (verified live).\n404 - { success: false, error: { code: 'NOT_FOUND', message: 'Product not found' } } (verified live)."
           },
           "response": [
             {
@@ -652,7 +652,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nCreate a new product (admin only).\n\nMethod:\nPOST\n\nEndpoint:\n/products\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nUNDETERMINED - see body comment. Only the unauthenticated 401 path was verified live in Phase 2.\n\nExpected response:\n200/201 (inferred).\n401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live).\n\nStatus: partially implemented - method/URL/auth confirmed, body schema unresolved. See docs/POSTMAN_IMPLEMENTATION.md.\n\nTests:\n- Status code is 401 without authentication\n- 401 response uses the standard error envelope\n- Create Product executed with an access token - manual schema verification required"
+            "description": "Purpose:\nCreate a new product (admin only).\n\nMethod:\nPOST\n\nEndpoint:\n/products\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nUNDETERMINED - see body comment. Only the unauthenticated 401 path was verified live in Phase 2.\n\nExpected response:\n200/201 (inferred).\n401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live).\n\nStatus: partially implemented - method/URL/auth confirmed, body schema unresolved. See docs/POSTMAN_IMPLEMENTATION.md."
           },
           "response": [
             {
@@ -758,7 +758,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nUpdate an existing product (admin only).\n\nMethod:\nPATCH\n\nEndpoint:\n/products/{id}\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid - it was NOT confirmed in Phase 2 whether this update endpoint expects the numeric id or the slug (unlike GET /products/{slug}, which is confirmed to use the slug). {{productId}} is used as a best-effort placeholder; verify against the real API before use.\n\nBody:\nUNDETERMINED - see body comment.\n\nExpected response:\n200 (inferred). 401/404 possible.\n\nStatus: not exercised live in Phase 2 (would mutate real catalog data with an unconfirmed identifier type and body schema). See docs/POSTMAN_IMPLEMENTATION.md.\n\nTests:\n- Status code is 401 without authentication\n- 401 response uses the standard error envelope\n- Update Product executed with an access token - manual schema verification required"
+            "description": "Purpose:\nUpdate an existing product (admin only).\n\nMethod:\nPATCH\n\nEndpoint:\n/products/{id}\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid - it was NOT confirmed in Phase 2 whether this update endpoint expects the numeric id or the slug (unlike GET /products/{slug}, which is confirmed to use the slug). {{productId}} is used as a best-effort placeholder; verify against the real API before use.\n\nBody:\nUNDETERMINED - see body comment.\n\nExpected response:\n200 (inferred). 401/404 possible.\n\nStatus: not exercised live in Phase 2 (would mutate real catalog data with an unconfirmed identifier type and body schema). See docs/POSTMAN_IMPLEMENTATION.md."
           },
           "response": [],
           "event": [
@@ -814,7 +814,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nDelete a product (admin only).\n\nMethod:\nDELETE\n\nEndpoint:\n/products/{id}\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid - identifier type (slug vs numeric id) not confirmed for this endpoint; see note on the Update Product request.\n\nBody:\nNone.\n\nExpected response:\n200/204 (inferred). 401/404 possible.\n\nStatus: not exercised live in Phase 2 - this is a destructive operation and was not run against real catalog data without confirming the identifier type. This request is available for use but should not be run against production-like data without care.\n\nTests:\n- Status code is 401 without authentication\n- 401 response uses the standard error envelope\n- Delete Product executed with an access token - id-type (slug vs numeric) unconfirmed"
+            "description": "Purpose:\nDelete a product (admin only).\n\nMethod:\nDELETE\n\nEndpoint:\n/products/{id}\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid - identifier type (slug vs numeric id) not confirmed for this endpoint; see note on the Update Product request.\n\nBody:\nNone.\n\nExpected response:\n200/204 (inferred). 401/404 possible.\n\nStatus: not exercised live in Phase 2 - this is a destructive operation and was not run against real catalog data without confirming the identifier type. This request is available for use but should not be run against production-like data without care."
           },
           "response": [],
           "event": [
@@ -850,7 +850,7 @@
     },
     {
       "name": "03 - Cart",
-      "description": "Session-scoped shopping cart (get, add item, update item, remove item, clear).\n\nContains: 5 requests. Authenticated by the X-Session-ID header, not by login - works for guest users. Every request here is fully live-verified with complete positive-path assertions.",
+      "description": "Session-scoped shopping cart endpoints. Authenticated by the X-Session-ID header ({{sessionId}}), not by login - verified live to work for guest (unauthenticated) users. All requests in this folder were exercised live during Phase 2 discovery.",
       "item": [
         {
           "name": "GET - Get Cart",
@@ -874,7 +874,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nGet the current session's cart.\n\nMethod:\nGET\n\nEndpoint:\n/cart\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header (verified live: missing it returns 400 VALIDATION_ERROR).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { items: [ { productId, quantity, product } ], totalItems, totalAmount } } (verified live).\n400 - { success: false, error: { code: 'VALIDATION_ERROR', message: 'Missing X-Session-ID header' } } (verified live if header removed).\n\nTests:\n- Status code is 200\n- Response Content-Type is JSON\n- Response has the expected cart structure\n- totalItems and totalAmount are not negative\n- Each cart item has the expected fields"
+            "description": "Purpose:\nGet the current session's cart.\n\nMethod:\nGET\n\nEndpoint:\n/cart\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header (verified live: missing it returns 400 VALIDATION_ERROR).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { items: [ { productId, quantity, product } ], totalItems, totalAmount } } (verified live).\n400 - { success: false, error: { code: 'VALIDATION_ERROR', message: 'Missing X-Session-ID header' } } (verified live if header removed)."
           },
           "response": [
             {
@@ -1011,7 +1011,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nAdd an item to the cart.\n\nMethod:\nPOST\n\nEndpoint:\n/cart/items\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters:\nNone.\n\nBody (required, JSON):\n{ \"productId\": number (required), \"quantity\": number (optional, client default 1) } - verified live.\n\nExpected response:\n200 - { success: true, data: { productId, quantity, totalItems } } (verified live).\n404 - { success: false, error: { code: 'NOT_FOUND', message: 'Product not found' } } if productId does not exist (verified live).\n\nTests:\n- Status code is 200\n- Response has success=true and expected fields\n- Returned productId matches the requested productId\n- totalItems reflects at least the added quantity"
+            "description": "Purpose:\nAdd an item to the cart.\n\nMethod:\nPOST\n\nEndpoint:\n/cart/items\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters:\nNone.\n\nBody (required, JSON):\n{ \"productId\": number (required), \"quantity\": number (optional, client default 1) } - verified live.\n\nExpected response:\n200 - { success: true, data: { productId, quantity, totalItems } } (verified live).\n404 - { success: false, error: { code: 'NOT_FOUND', message: 'Product not found' } } if productId does not exist (verified live)."
           },
           "response": [
             {
@@ -1164,7 +1164,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nUpdate the quantity of an existing cart item.\n\nMethod:\nPATCH\n\nEndpoint:\n/cart/items/{productId}\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters (path):\nproductId (number) - the product's numeric id, e.g. 4 (verified live; note this differs from GET /products/{slug} which uses the slug).\n\nBody (required, JSON):\n{ \"quantity\": number (required) } - verified live.\n\nExpected response:\n200 - { success: true, data: { productId, quantity, totalItems } } (verified live).\n\nTests:\n- Status code is 200\n- Response reflects the updated quantity\n- Response has expected fields and types"
+            "description": "Purpose:\nUpdate the quantity of an existing cart item.\n\nMethod:\nPATCH\n\nEndpoint:\n/cart/items/{productId}\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters (path):\nproductId (number) - the product's numeric id, e.g. 4 (verified live; note this differs from GET /products/{slug} which uses the slug).\n\nBody (required, JSON):\n{ \"quantity\": number (required) } - verified live.\n\nExpected response:\n200 - { success: true, data: { productId, quantity, totalItems } } (verified live)."
           },
           "response": [
             {
@@ -1260,7 +1260,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nRemove a single item from the cart.\n\nMethod:\nDELETE\n\nEndpoint:\n/cart/items/{productId}\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters (path):\nproductId (number) - verified live.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { productId, removed: true, totalItems } } (verified live).\n\nTests:\n- Status code is 200\n- Response confirms removal"
+            "description": "Purpose:\nRemove a single item from the cart.\n\nMethod:\nDELETE\n\nEndpoint:\n/cart/items/{productId}\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters (path):\nproductId (number) - verified live.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { productId, removed: true, totalItems } } (verified live)."
           },
           "response": [
             {
@@ -1341,7 +1341,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nRemove all items from the cart.\n\nMethod:\nDELETE\n\nEndpoint:\n/cart\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { cleared: true, totalItems: 0 } } (verified live).\n\nTests:\n- Status code is 200\n- Response confirms the cart was cleared"
+            "description": "Purpose:\nRemove all items from the cart.\n\nMethod:\nDELETE\n\nEndpoint:\n/cart\n\nAuthentication:\nNot Bearer-authenticated. Requires X-Session-ID header.\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 - { success: true, data: { cleared: true, totalItems: 0 } } (verified live)."
           },
           "response": [
             {
@@ -1402,7 +1402,7 @@
     },
     {
       "name": "04 - Orders",
-      "description": "Authenticated order endpoints (list, get by id, create).\n\nContains: 3 requests. All require a Bearer token. GET requests are fully tested; Create has an undetermined request body schema (Phase 2/3 finding).",
+      "description": "Authenticated order endpoints. GET requests' auth requirement verified live; POST /orders body schema is undetermined.",
       "item": [
         {
           "name": "GET - Get All Orders",
@@ -1428,7 +1428,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nList the authenticated user's orders.\n\nMethod:\nGET\n\nEndpoint:\n/orders\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred, not observed live). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live).\n\nTests:\n- Status code is 401 without authentication\n- 401 response uses the standard error envelope\n- Status code is 200 for an authenticated user\n- Response contains an orders array\n- Get All Orders returned an undocumented status code ("
+            "description": "Purpose:\nList the authenticated user's orders.\n\nMethod:\nGET\n\nEndpoint:\n/orders\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred, not observed live). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live)."
           },
           "response": [
             {
@@ -1518,7 +1518,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nGet a single order by id.\n\nMethod:\nGET\n\nEndpoint:\n/orders/{id}\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters (path):\nid (number, presumed) - not confirmed live; determined from frontend source only.\n\nBody:\nNone.\n\nExpected response:\n200/404 (inferred). Not exercised live in Phase 2 - requires an authenticated session and an existing order id, neither of which were available.\n\nTests:\n- Status code is 401 without authentication\n- Status code is 404 for a non-existent order\n- Status code is 200 for an existing order\n- Response contains an order object\n- Get Order By ID returned an undocumented status code ("
+            "description": "Purpose:\nGet a single order by id.\n\nMethod:\nGET\n\nEndpoint:\n/orders/{id}\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters (path):\nid (number, presumed) - not confirmed live; determined from frontend source only.\n\nBody:\nNone.\n\nExpected response:\n200/404 (inferred). Not exercised live in Phase 2 - requires an authenticated session and an existing order id, neither of which were available."
           },
           "response": [],
           "event": [
@@ -1594,7 +1594,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nCreate an order (checkout).\n\nMethod:\nPOST\n\nEndpoint:\n/orders\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nUNDETERMINED - see body comment.\n\nExpected response:\n200/201 (inferred). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live).\n\nStatus: partially implemented - method/URL/auth confirmed, body schema unresolved. See docs/POSTMAN_IMPLEMENTATION.md.\n\nTests:\n- Status code is 401 without authentication\n- 401 response uses the standard error envelope\n- Create Order executed with an access token - manual schema verification required"
+            "description": "Purpose:\nCreate an order (checkout).\n\nMethod:\nPOST\n\nEndpoint:\n/orders\n\nAuthentication:\nRequired (Bearer {{authToken}}).\n\nParameters:\nNone.\n\nBody:\nUNDETERMINED - see body comment.\n\nExpected response:\n200/201 (inferred). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live).\n\nStatus: partially implemented - method/URL/auth confirmed, body schema unresolved. See docs/POSTMAN_IMPLEMENTATION.md."
           },
           "response": [
             {
@@ -1665,7 +1665,7 @@
     },
     {
       "name": "05 - Admin",
-      "description": "Admin-only product/order management and dashboard statistics.\n\nContains: 5 requests. All require an admin Bearer token. Stock and order-status updates use a fully known request body; the admin GET endpoints and their auth requirement are fully tested.",
+      "description": "Admin-only product/order management and dashboard statistics. Auth requirement verified live for all GET endpoints; PATCH bodies determined from frontend source only (not exercised live - require admin credentials).",
       "item": [
         {
           "name": "GET - Get Admin Products",
@@ -1692,7 +1692,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nList products from the admin view.\n\nMethod:\nGET\n\nEndpoint:\n/admin/products\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live). Note: 403-vs-401 for a non-admin authenticated user was not distinguishable in Phase 2.\n\nTests:\n- Status code is 401 without authentication\n- 401 response uses the standard error envelope\n- Status code is 200 for an authenticated admin (Get Admin Products)\n- Response has success=true and a data payload\n- Get Admin Products returned an undocumented status code ("
+            "description": "Purpose:\nList products from the admin view.\n\nMethod:\nGET\n\nEndpoint:\n/admin/products\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live). Note: 403-vs-401 for a non-admin authenticated user was not distinguishable in Phase 2."
           },
           "response": [
             {
@@ -1799,7 +1799,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nUpdate a product's stock level (admin only).\n\nMethod:\nPATCH\n\nEndpoint:\n/admin/products/{id}/stock\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid (number) - the product's numeric id.\n\nBody (JSON, determined from frontend source):\n{ \"stock\": number (required) }\n\nExpected response:\n200 (inferred). 401/404 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials).\n\nTests:\n- Status code is 401 without authentication\n- Status code is 404 for a non-existent product\n- Status code is 200 when authenticated as admin\n- Response reflects the updated stock value where present\n- Update Product Stock returned an undocumented status code ("
+            "description": "Purpose:\nUpdate a product's stock level (admin only).\n\nMethod:\nPATCH\n\nEndpoint:\n/admin/products/{id}/stock\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid (number) - the product's numeric id.\n\nBody (JSON, determined from frontend source):\n{ \"stock\": number (required) }\n\nExpected response:\n200 (inferred). 401/404 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials)."
           },
           "response": [],
           "event": [
@@ -1865,7 +1865,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nList all orders (admin only).\n\nMethod:\nGET\n\nEndpoint:\n/admin/orders\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred). 401 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials).\n\nTests:\n- Status code is 401 without authentication\n- 401 response uses the standard error envelope\n- Status code is 200 for an authenticated admin (Get Admin Orders)\n- Response has success=true and a data payload\n- Get Admin Orders returned an undocumented status code ("
+            "description": "Purpose:\nList all orders (admin only).\n\nMethod:\nGET\n\nEndpoint:\n/admin/orders\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred). 401 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials)."
           },
           "response": [],
           "event": [
@@ -1944,7 +1944,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nUpdate an order's status (admin only).\n\nMethod:\nPATCH\n\nEndpoint:\n/admin/orders/{id}/status\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid (number) - the order's id.\n\nBody (JSON, determined from frontend source):\n{ \"status\": string (required) } - the set of valid status values (e.g. pending/shipped/delivered/cancelled) was NOT determined in Phase 2. The example value 'shipped' is illustrative only, not a confirmed valid value - verify before use.\n\nExpected response:\n200 (inferred). 401/404 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials and an existing order).\n\nTests:\n- Status code is 401 without authentication\n- Status code is 404 for a non-existent order\n- Status code is 200 when authenticated as admin\n- Response reflects the updated status value where present\n- Update Order Status returned an undocumented status code ("
+            "description": "Purpose:\nUpdate an order's status (admin only).\n\nMethod:\nPATCH\n\nEndpoint:\n/admin/orders/{id}/status\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters (path):\nid (number) - the order's id.\n\nBody (JSON, determined from frontend source):\n{ \"status\": string (required) } - the set of valid status values (e.g. pending/shipped/delivered/cancelled) was NOT determined in Phase 2. The example value 'shipped' is illustrative only, not a confirmed valid value - verify before use.\n\nExpected response:\n200 (inferred). 401/404 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials and an existing order)."
           },
           "response": [],
           "event": [
@@ -2010,7 +2010,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nGet admin dashboard statistics.\n\nMethod:\nGET\n\nEndpoint:\n/admin/stats\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live).\n\nTests:\n- Status code is 401 without authentication\n- 401 response uses the standard error envelope\n- Status code is 200 for an authenticated admin (Get Admin Stats)\n- Response has success=true and a data payload\n- Get Admin Stats returned an undocumented status code ("
+            "description": "Purpose:\nGet admin dashboard statistics.\n\nMethod:\nGET\n\nEndpoint:\n/admin/stats\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody:\nNone.\n\nExpected response:\n200 (inferred). 401 - { success: false, error: { code: 'UNAUTHORIZED', message: 'Missing authentication' } } (verified live)."
           },
           "response": [
             {
@@ -2080,7 +2080,7 @@
     },
     {
       "name": "06 - Images",
-      "description": "Image upload (admin) and static image serving.\n\nContains: 2 requests. Get Image is public and fully tested; Upload Image requires an admin token and a real file attachment (not exercised live - see docs/API_TEST_AUTOMATION.md).",
+      "description": "Image upload (admin) and static image serving. GET verified live; POST determined from frontend source only.",
       "item": [
         {
           "name": "POST - Upload Image",
@@ -2121,7 +2121,7 @@
                 }
               ]
             },
-            "description": "Purpose:\nUpload an image (used for product images).\n\nMethod:\nPOST\n\nEndpoint:\n/images\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody (multipart/form-data, determined from frontend source):\nfile (binary, required), folder (string, optional, default 'products').\n\nExpected response:\n200 (inferred). 401 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials and would upload a real file). Select a local file in the 'file' field before sending.\n\nTests:\n- Status code is 401 without authentication\n- 401 response uses the standard error envelope\n- Upload Image executed with an access token - requires a real file and manual verification"
+            "description": "Purpose:\nUpload an image (used for product images).\n\nMethod:\nPOST\n\nEndpoint:\n/images\n\nAuthentication:\nRequired (Bearer {{authToken}}, admin privilege presumed).\n\nParameters:\nNone.\n\nBody (multipart/form-data, determined from frontend source):\nfile (binary, required), folder (string, optional, default 'products').\n\nExpected response:\n200 (inferred). 401 possible.\n\nStatus: determined from frontend source only; not exercised live in Phase 2 (requires admin credentials and would upload a real file). Select a local file in the 'file' field before sending."
           },
           "response": [],
           "event": [
@@ -2172,7 +2172,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Purpose:\nServe a previously uploaded image (static asset).\n\nMethod:\nGET\n\nEndpoint:\n/images/{folder}/{filename}\n\nAuthentication:\nNot required.\n\nParameters (path):\nfolder (string, e.g. 'products'), filename (string) - verified live using a real image referenced by a product's imageUrl field.\n\nBody:\nNone.\n\nExpected response:\n200 - binary image data (Content-Type: image/*, CORS Access-Control-Allow-Origin: *) (verified live).\n404 if the file does not exist (not exercised, inferred from standard static-asset behavior).\n\nTests:\n- Status code is 200\n- Response Content-Type indicates an image\n- Response has a non-empty body\n- CORS header allows cross-origin access"
+            "description": "Purpose:\nServe a previously uploaded image (static asset).\n\nMethod:\nGET\n\nEndpoint:\n/images/{folder}/{filename}\n\nAuthentication:\nNot required.\n\nParameters (path):\nfolder (string, e.g. 'products'), filename (string) - verified live using a real image referenced by a product's imageUrl field.\n\nBody:\nNone.\n\nExpected response:\n200 - binary image data (Content-Type: image/*, CORS Access-Control-Allow-Origin: *) (verified live).\n404 if the file does not exist (not exercised, inferred from standard static-asset behavior)."
           },
           "response": [],
           "event": [
@@ -2239,7 +2239,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live in Phase 2/4): submitting an empty body to /auth/login returns a 400 ZodError - both username and password are reported as required.\n\nTests:\n- Status code is 400\n- Response is a ZodError listing username and password as required"
+            "description": "Negative test (verified live in Phase 2/4): submitting an empty body to /auth/login returns a 400 ZodError - both username and password are reported as required."
           },
           "response": [],
           "event": [
@@ -2297,7 +2297,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live in Phase 2/4): a well-formed but non-existent username/password returns 401 INVALID_CREDENTIALS. Credentials used are fake/non-sensitive placeholders.\n\nTests:\n- Status code is 401\n- Response uses the standard error envelope with INVALID_CREDENTIALS"
+            "description": "Negative test (verified live in Phase 2/4): a well-formed but non-existent username/password returns 401 INVALID_CREDENTIALS. Credentials used are fake/non-sensitive placeholders."
           },
           "response": [],
           "event": [
@@ -2338,7 +2338,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live): GET /cart without an X-Session-ID header returns 400 VALIDATION_ERROR.\n\nTests:\n- Status code is 400\n- Response reports the missing X-Session-ID header"
+            "description": "Negative test (verified live): GET /cart without an X-Session-ID header returns 400 VALIDATION_ERROR."
           },
           "response": [],
           "event": [
@@ -2399,7 +2399,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live): omitting the required productId field returns a 400 ZodError.\n\nTests:\n- Status code is 400\n- Response is a ZodError reporting productId as required"
+            "description": "Negative test (verified live): omitting the required productId field returns a 400 ZodError."
           },
           "response": [],
           "event": [
@@ -2459,7 +2459,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live): sending productId as a string instead of a number returns a 400 ZodError (invalid_type).\n\nTests:\n- Status code is 400\n- Response is a ZodError reporting productId type mismatch"
+            "description": "Negative test (verified live): sending productId as a string instead of a number returns a 400 ZodError (invalid_type)."
           },
           "response": [],
           "event": [
@@ -2520,7 +2520,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live): adding a productId that does not exist in the catalog returns 404 NOT_FOUND.\n\nTests:\n- Status code is 404\n- Response uses the standard error envelope with NOT_FOUND"
+            "description": "Negative test (verified live): adding a productId that does not exist in the catalog returns 404 NOT_FOUND."
           },
           "response": [],
           "event": [
@@ -2580,7 +2580,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Boundary test (verified live during Phase 4): quantity=0 is rejected - the API requires quantity to be strictly greater than 0 when adding to the cart (400 ZodError, too_small). This is a Phase 4 finding not previously documented in Phase 2.\n\nTests:\n- Status code is 400\n- Response is a ZodError reporting quantity must be greater than 0"
+            "description": "Boundary test (verified live during Phase 4): quantity=0 is rejected - the API requires quantity to be strictly greater than 0 when adding to the cart (400 ZodError, too_small). This is a Phase 4 finding not previously documented in Phase 2."
           },
           "response": [],
           "event": [
@@ -2641,7 +2641,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Boundary test (verified live): a negative quantity is rejected the same way as zero (400 ZodError, too_small).\n\nTests:\n- Status code is 400\n- Response is a ZodError reporting an invalid quantity"
+            "description": "Boundary test (verified live): a negative quantity is rejected the same way as zero (400 ZodError, too_small)."
           },
           "response": [],
           "event": [
@@ -2703,7 +2703,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Boundary test (verified live): PATCH /cart/items/{productId} rejects a negative quantity with 400 ZodError (minimum 0, inclusive) - schema validation runs before the cart-item-existence check, so this is deterministic regardless of cart contents.\n\nTests:\n- Status code is 400\n- Response is a ZodError reporting quantity must be >= 0"
+            "description": "Boundary test (verified live): PATCH /cart/items/{productId} rejects a negative quantity with 400 ZodError (minimum 0, inclusive) - schema validation runs before the cart-item-existence check, so this is deterministic regardless of cart contents."
           },
           "response": [],
           "event": [
@@ -2752,7 +2752,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live): removing a productId that is not currently in the cart returns 404 with message 'Cart item not found' (distinct from the product-catalog 'Product not found' message).\n\nTests:\n- Status code is 404\n- Response reports the cart item was not found"
+            "description": "Negative test (verified live): removing a productId that is not currently in the cart returns 404 with message 'Cart item not found' (distinct from the product-catalog 'Product not found' message)."
           },
           "response": [],
           "event": [
@@ -2795,7 +2795,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live): requesting a product by a slug that does not exist returns 404 NOT_FOUND.\n\nTests:\n- Status code is 404\n- Response uses the standard error envelope with NOT_FOUND"
+            "description": "Negative test (verified live): requesting a product by a slug that does not exist returns 404 NOT_FOUND."
           },
           "response": [],
           "event": [
@@ -2837,7 +2837,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live): explicitly forces no Authorization header (auth: noauth), independent of the {{authToken}} environment variable, so this always exercises the unauthenticated path.\n\nTests:\n- Status code is 401\n- Response uses the standard error envelope with UNAUTHORIZED"
+            "description": "Negative test (verified live): explicitly forces no Authorization header (auth: noauth), independent of the {{authToken}} environment variable, so this always exercises the unauthenticated path."
           },
           "response": [],
           "event": [
@@ -2878,7 +2878,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live): explicitly forces no Authorization header (auth: noauth), independent of the {{authToken}} environment variable.\n\nTests:\n- Status code is 401\n- Response uses the standard error envelope with UNAUTHORIZED"
+            "description": "Negative test (verified live): explicitly forces no Authorization header (auth: noauth), independent of the {{authToken}} environment variable."
           },
           "response": [],
           "event": [
@@ -2920,7 +2920,7 @@
             "auth": {
               "type": "noauth"
             },
-            "description": "Negative test (verified live): explicitly forces no Authorization header (auth: noauth), independent of the {{authToken}} environment variable.\n\nTests:\n- Status code is 401\n- Response uses the standard error envelope with UNAUTHORIZED"
+            "description": "Negative test (verified live): explicitly forces no Authorization header (auth: noauth), independent of the {{authToken}} environment variable."
           },
           "response": [],
           "event": [
@@ -2945,11 +2945,16 @@
           ]
         }
       ],
-      "description": "Dedicated, deterministic negative and boundary test requests (Phase 4).\n\nContains: 14 requests. Each deliberately triggers a documented error/validation path (missing/invalid fields, invalid types, unknown ids, boundary quantity values, missing auth) and is independent of environment state - these will produce the same result regardless of whether {{authToken}} happens to be populated. All scenarios were verified live against https://qademo.com/api."
+      "description": "Dedicated negative and boundary test requests (Phase 4). Each request deliberately triggers a documented error/validation path and is independent of environment auth state - deterministic regardless of whether {{authToken}} is populated. All scenarios were verified live against https://qademo.com/api during Phase 4 (some, marked in their descriptions, are new findings not previously captured in Phase 2)."
     },
     {
-      "name": "08 - Workflows",
-      "description": "Phase 5 - API Data Chaining & Workflow Automation.\n\nContains: 4 chained, ordered workflows (16 requests total) using pm.execution.setNextRequest() to connect dependent requests, with dynamic id capture/reuse and no hardcoded generated IDs. Run a workflow's first request via the Collection Runner (scoped to that sub-folder) to execute the full chain in order. Additive to folders 01-07 above - does not modify any request in them. See docs/API_DATA_CHAINING.md for the full architecture and live execution evidence.",
+      "name": "08 - Cleanup",
+      "item": [],
+      "description": "Reserved for future phases. Delete/clear operations for resources actually created during test runs (e.g. deleting a test product, clearing a test cart) already exist as individual requests in their respective resource folders (02 - Products, 03 - Cart). Phase 5 (Data Chaining) will sequence create -> use -> cleanup flows; this folder remains empty until then."
+    },
+    {
+      "name": "09 - Workflows",
+      "description": "Phase 5 - API Data Chaining & Workflow Automation. Each sub-folder is an ordered, chained workflow using pm.execution.setNextRequest() to connect dependent requests, with dynamic data extraction/storage via pm.collectionVariables and pm.environment (no hardcoded generated IDs). Run a sub-folder with the Collection Runner (select only that sub-folder, or run it standalone starting from its first request) to execute the full chain in order. These workflows are additive - they do not modify the original Phase 3/4 requests in folders 01-08, whose Phase 4 assertions remain fully intact. See docs/API_DATA_CHAINING.md for the full architecture, variable strategy, and known limitations.",
       "item": [
         {
           "name": "Workflow 01 - Authentication Chaining",

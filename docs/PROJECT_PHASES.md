@@ -64,4 +64,4 @@ This document describes the planned, incremental roadmap for the QA-Demo API Tes
 
 ---
 
-**Current phase:** Phase 3 — API Request Implementation (completed)
+**Current phase:** Phase 6 — Newman Automation (completed)

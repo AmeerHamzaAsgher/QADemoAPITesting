@@ -1,0 +1,938 @@
+# Git & GitHub — Phase 3 Project Push Guide
+
+## Project
+
+**QA-Demo API Testing Project**
+
+## Local Project Path
+
+```text
+D:\API Testing\Newman API Testing\QADemoAPITesting
+```
+
+## Purpose
+
+This document explains the complete process for pushing the completed Phase 1–Phase 3 API testing project from the local Windows machine to GitHub.
+
+The process covers:
+
+1. Opening the project
+2. Verifying the project location
+3. Verifying the project structure
+4. Checking Git status
+5. Initializing Git
+6. Setting the main branch
+7. Configuring Git identity
+8. Checking Git history
+9. Checking GitHub remote
+10. Adding GitHub remote
+11. Verifying the remote
+12. Reviewing `.gitignore`
+13. Checking for sensitive information
+14. Staging files
+15. Reviewing staged files
+16. Creating the first commit
+17. Verifying the commit
+18. Pushing to GitHub
+19. Verifying the local repository
+20. Checking remote synchronization
+21. Verifying files on GitHub
+22. Verifying GitHub commit history
+23. Final repository validation
+
+---
+
+# 1. Open the project directory
+
+Open PowerShell and navigate to the project:
+
+```powershell
+cd "D:\API Testing\Newman API Testing\QADemoAPITesting"
+```
+
+### Why?
+
+Git commands must be executed from the project repository directory.
+
+---
+
+# 2. Verify the current location
+
+```powershell
+Get-Location
+```
+
+Expected:
+
+```text
+Path
+----
+D:\API Testing\Newman API Testing\QADemoAPITesting
+```
+
+### Why?
+
+This prevents accidentally running Git commands against another project.
+
+---
+
+# 3. Verify the project structure
+
+```powershell
+Get-ChildItem -Recurse
+```
+
+Expected structure should contain the major Phase 1–3 artifacts, such as:
+
+```text
+QADemoAPITesting
+│
+├── prompts
+│   ├── phase-1-project-scaffolding.md
+│   ├── phase-2-api-discovery.md
+│   ├── phase-3-api-request-implementation.md
+│   └── README.md
+│
+├── postman
+│   ├── collections
+│   │   └── QA-Demo Project.postman_collection.json
+│   └── environments
+│       └── QA-Demo Environment.postman_environment.json
+│
+├── docs
+│   ├── API_DISCOVERY.md
+│   ├── api-inventory.json
+│   └── POSTMAN_IMPLEMENTATION.md
+│
+├── tests
+├── scripts
+├── reports
+│
+├── .github
+├── .gitignore
+└── README.md
+```
+
+### Why?
+
+Before pushing anything, verify that the intended project files actually exist.
+
+---
+
+# 4. Check Git status
+
+```powershell
+git status
+```
+
+Possible output:
+
+```text
+On branch main
+
+No commits yet
+
+Untracked files:
+...
+```
+
+This is normal for a new Git repository.
+
+### Why?
+
+`git status` tells us:
+
+* Current branch
+* Whether commits exist
+* Modified files
+* Untracked files
+* Staged files
+
+---
+
+# 5. Initialize Git
+
+If Git has not already been initialized:
+
+```powershell
+git init
+```
+
+Possible output:
+
+```text
+Initialized empty Git repository
+```
+
+If you see:
+
+```text
+Reinitialized existing Git repository
+```
+
+Git was already initialized.
+
+### Why?
+
+This creates the `.git` directory that turns the project folder into a Git repository.
+
+---
+
+# 6. Set the main branch
+
+```powershell
+git branch -M main
+```
+
+### Why?
+
+This establishes:
+
+```text
+main
+```
+
+as the primary branch.
+
+### Important
+
+If:
+
+```powershell
+git branch
+```
+
+shows nothing immediately afterward, that can be normal when the repository has **no commits yet**.
+
+After the first commit, you should see:
+
+```text
+* main
+```
+
+---
+
+# 7. Configure Git username
+
+Check the current configuration:
+
+```powershell
+git config --global user.name
+```
+
+If empty, configure it:
+
+```powershell
+git config --global user.name "YOUR_GITHUB_USERNAME"
+```
+
+### Why?
+
+Git stores the author name in each commit.
+
+---
+
+# 8. Configure Git email
+
+Check:
+
+```powershell
+git config --global user.email
+```
+
+If empty:
+
+```powershell
+git config --global user.email "YOUR_GITHUB_EMAIL"
+```
+
+### Why?
+
+Git associates commits with the configured email address.
+
+---
+
+# 9. Check Git history
+
+```powershell
+git log --oneline --decorate --all -10
+```
+
+For a new repository, you may receive:
+
+```text
+fatal: your current branch 'main' does not have any commits yet
+```
+
+This is normal.
+
+### Why?
+
+This verifies whether previous commits already exist.
+
+Do not delete existing commits simply because the repository is being prepared for GitHub.
+
+---
+
+# 10. Check the GitHub remote
+
+```powershell
+git remote -v
+```
+
+If nothing appears, no remote repository is configured.
+
+If you see:
+
+```text
+origin  https://github.com/USERNAME/REPOSITORY.git (fetch)
+origin  https://github.com/USERNAME/REPOSITORY.git (push)
+```
+
+a remote already exists.
+
+### Why?
+
+The remote tells Git where to push the project.
+
+---
+
+# 11. Add the GitHub remote
+
+If no `origin` exists:
+
+```powershell
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+```
+
+Replace the URL with the **actual GitHub repository URL**.
+
+Example:
+
+```powershell
+git remote add origin https://github.com/AmeerHamzaAsgher/QADemoAPITesting.git
+```
+
+### Why?
+
+This connects:
+
+```text
+Local repository
+       ↓
+origin
+       ↓
+GitHub repository
+```
+
+### Important
+
+Never use a guessed repository URL.
+
+---
+
+# 12. Verify the remote
+
+```powershell
+git remote -v
+```
+
+Expected:
+
+```text
+origin  https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git (fetch)
+origin  https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git (push)
+```
+
+### Why?
+
+This confirms that both fetch and push operations point to the intended repository.
+
+---
+
+# 13. Review `.gitignore`
+
+Display it:
+
+```powershell
+Get-Content .gitignore
+```
+
+A professional project should exclude sensitive and temporary files.
+
+Example:
+
+```gitignore
+node_modules/
+
+.env
+.env.*
+!.env.example
+
+reports/
+*.html
+*.xml
+
+*.log
+*.tmp
+
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
+
+postman/secrets/
+```
+
+### Important
+
+Do NOT ignore all JSON files.
+
+These project files should normally be committed:
+
+```text
+postman/collections/QA-Demo Project.postman_collection.json
+postman/environments/QA-Demo Environment.postman_environment.json
+docs/api-inventory.json
+```
+
+---
+
+# 14. Search for sensitive information
+
+Before staging files, search the project:
+
+```powershell
+Get-ChildItem -Recurse -File | Select-String -Pattern "password|api_key|apikey|client_secret|access_token|refresh_token"
+```
+
+Review the output carefully.
+
+Never commit:
+
+```text
+Real passwords
+Real API keys
+Real access tokens
+Real refresh tokens
+Client secrets
+Session cookies
+```
+
+Safe variables are acceptable:
+
+```text
+{{password}}
+{{apiKey}}
+{{authToken}}
+{{refreshToken}}
+```
+
+### Why?
+
+GitHub repositories can expose sensitive credentials.
+
+---
+
+# 15. Stage the project files
+
+```powershell
+git add .
+```
+
+### Why?
+
+This moves the current project changes into Git's staging area.
+
+The process is:
+
+```text
+Working Directory
+       ↓
+git add .
+       ↓
+Staging Area
+       ↓
+git commit
+       ↓
+Local Repository
+       ↓
+git push
+       ↓
+GitHub
+```
+
+---
+
+# 16. Review staged files
+
+```powershell
+git status
+```
+
+Look for:
+
+```text
+Changes to be committed:
+```
+
+You should see files such as:
+
+```text
+docs/API_DISCOVERY.md
+docs/api-inventory.json
+docs/POSTMAN_IMPLEMENTATION.md
+postman/collections/QA-Demo Project.postman_collection.json
+postman/environments/QA-Demo Environment.postman_environment.json
+prompts/phase-1-project-scaffolding.md
+prompts/phase-2-api-discovery.md
+prompts/phase-3-api-request-implementation.md
+README.md
+.gitignore
+```
+
+### Why?
+
+This is your final opportunity to see exactly which files will enter the commit.
+
+---
+
+# 17. Review staged changes
+
+```powershell
+git diff --cached --stat
+```
+
+This provides a summary of staged changes.
+
+For a detailed review:
+
+```powershell
+git diff --cached
+```
+
+### Why?
+
+This verifies that Git is about to commit what you actually intended.
+
+Pay special attention to:
+
+```text
+postman/environments/
+postman/collections/
+```
+
+and:
+
+```text
+docs/
+```
+
+because these may contain configuration or API information.
+
+---
+
+# 18. Create the commit
+
+After confirming everything is correct:
+
+```powershell
+git commit -m "Complete Phase 3 Postman API implementation"
+```
+
+Example result:
+
+```text
+[main abc1234] Complete Phase 3 Postman API implementation
+```
+
+### Why?
+
+A commit creates a permanent checkpoint in the local Git repository.
+
+This commit represents:
+
+```text
+Phase 1
++
+Phase 2
++
+Phase 3
+```
+
+---
+
+# 19. Verify the commit
+
+```powershell
+git log --oneline --decorate -5
+```
+
+Expected:
+
+```text
+abc1234 (HEAD -> main) Complete Phase 3 Postman API implementation
+```
+
+### Why?
+
+This confirms that the Phase 3 project has been committed locally.
+
+---
+
+# 20. Push to GitHub
+
+If the GitHub repository is empty:
+
+```powershell
+git push -u origin main
+```
+
+### What `-u` means
+
+It establishes the upstream relationship:
+
+```text
+local main
+     ↕
+origin/main
+```
+
+After this, future pushes can usually use:
+
+```powershell
+git push
+```
+
+### Important
+
+Do NOT use:
+
+```powershell
+git push --force
+```
+
+unless there is a specific, understood reason.
+
+Force-pushing can overwrite remote history.
+
+---
+
+# 21. Verify local repository status
+
+After the push:
+
+```powershell
+git status
+```
+
+Ideal output:
+
+```text
+On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean
+```
+
+### Why?
+
+This confirms:
+
+* No uncommitted changes
+* Local branch is synchronized with GitHub
+* Working tree is clean
+
+---
+
+# 22. Verify local and remote commit
+
+Run:
+
+```powershell
+git log --oneline --decorate -5
+```
+
+You should see:
+
+```text
+abc1234 (HEAD -> main, origin/main) Complete Phase 3 Postman API implementation
+```
+
+The important part is:
+
+```text
+HEAD -> main
+origin/main
+```
+
+both pointing to the same commit.
+
+### Why?
+
+This confirms the local and GitHub branches are synchronized.
+
+---
+
+# 23. Verify the GitHub repository
+
+Open the GitHub repository in your browser.
+
+Verify the following:
+
+## Root
+
+```text
+README.md
+.gitignore
+docs/
+postman/
+prompts/
+tests/
+scripts/
+reports/
+```
+
+## Prompts
+
+Verify:
+
+```text
+prompts/
+├── phase-1-project-scaffolding.md
+├── phase-2-api-discovery.md
+├── phase-3-api-request-implementation.md
+└── README.md
+```
+
+## Documentation
+
+Verify:
+
+```text
+docs/
+├── API_DISCOVERY.md
+├── api-inventory.json
+└── POSTMAN_IMPLEMENTATION.md
+```
+
+## Postman
+
+Verify:
+
+```text
+postman/
+├── collections/
+│   └── QA-Demo Project.postman_collection.json
+│
+└── environments/
+    └── QA-Demo Environment.postman_environment.json
+```
+
+## GitHub commit
+
+Verify that GitHub shows:
+
+```text
+Complete Phase 3 Postman API implementation
+```
+
+---
+
+# Git Architecture
+
+The complete workflow is:
+
+```text
+                 LOCAL COMPUTER
+                 ───────────────
+
+        QADemoAPITesting folder
+                  │
+                  ▼
+          Working Directory
+                  │
+              git add .
+                  │
+                  ▼
+            Staging Area
+                  │
+          git commit -m "..."
+                  │
+                  ▼
+          Local Git Repository
+                  │
+          git push -u origin main
+                  │
+                  ▼
+                 GitHub
+                  │
+                  ▼
+             origin/main
+```
+
+---
+
+# Phase 3 Git Checkpoint
+
+After the push, the repository should represent:
+
+```text
+Phase 1
+Project Scaffolding
+       │
+       ▼
+Phase 2
+API Discovery
+       │
+       ├── API_DISCOVERY.md
+       └── api-inventory.json
+       │
+       ▼
+Phase 3
+Postman API Implementation
+       │
+       ├── QA-Demo Project
+       ├── QA-Demo Environment
+       └── POSTMAN_IMPLEMENTATION.md
+       │
+       ▼
+Git Commit
+       │
+       ▼
+GitHub
+```
+
+---
+
+# Recommended Commit History
+
+As the project grows, use a separate meaningful commit for each phase.
+
+Recommended history:
+
+```text
+Complete Phase 8 GitHub Actions CI/CD
+Complete Phase 7 Git/GitHub integration
+Complete Phase 6 Newman automation
+Complete Phase 5 API data chaining
+Complete Phase 4 API test automation
+Complete Phase 3 Postman API implementation
+Complete Phase 2 API discovery
+Complete Phase 1 project scaffolding
+```
+
+This provides a clean professional learning history.
+
+---
+
+# Important Git Commands Reference
+
+| Command                          | Purpose                               |
+| -------------------------------- | ------------------------------------- |
+| `git init`                       | Initialize Git                        |
+| `git status`                     | Show repository status                |
+| `git branch`                     | Show branches                         |
+| `git branch -M main`             | Rename current branch to `main`       |
+| `git config --global user.name`  | Show/configure Git username           |
+| `git config --global user.email` | Show/configure Git email              |
+| `git log`                        | View commit history                   |
+| `git remote -v`                  | Show GitHub remote                    |
+| `git remote add origin URL`      | Connect GitHub repository             |
+| `git add .`                      | Stage all changes                     |
+| `git diff --cached`              | Review staged changes                 |
+| `git commit -m "..."`            | Create commit                         |
+| `git push -u origin main`        | Push main branch to GitHub            |
+| `git push`                       | Push subsequent commits               |
+| `git fetch`                      | Retrieve remote information           |
+| `git pull`                       | Retrieve and integrate remote changes |
+
+---
+
+# Final Phase 3 Git Checklist
+
+Before considering the GitHub push complete:
+
+* [ ] Correct project directory
+* [ ] Project structure verified
+* [ ] Git initialized
+* [ ] Branch configured as `main`
+* [ ] Git username configured
+* [ ] Git email configured
+* [ ] Existing history reviewed
+* [ ] GitHub remote verified
+* [ ] `.gitignore` reviewed
+* [ ] Secrets checked
+* [ ] Files staged
+* [ ] Staged files reviewed
+* [ ] Commit created
+* [ ] Commit verified
+* [ ] Project pushed to GitHub
+* [ ] `git status` clean
+* [ ] `origin/main` synchronized
+* [ ] GitHub files verified
+* [ ] GitHub commit verified
+
+---
+
+# Security Rule
+
+Never commit:
+
+```text
+Passwords
+API keys
+Access tokens
+Refresh tokens
+Client secrets
+Private certificates
+Session cookies
+Production credentials
+```
+
+Use environment variables or secure secret-management mechanisms instead.
+
+For Postman:
+
+```text
+{{authToken}}
+{{apiKey}}
+{{username}}
+{{password}}
+```
+
+is preferable to storing actual secret values in the collection.
+
+---
+
+# End State
+
+The successful result is:
+
+```text
+LOCAL PROJECT
+     │
+     │ git add
+     ▼
+STAGING AREA
+     │
+     │ git commit
+     ▼
+LOCAL MAIN
+     │
+     │ git push
+     ▼
+GITHUB MAIN
+```
+
+At this point, the completed Phase 1–3 project is safely version-controlled and available on GitHub.
+
+The next development milestone can begin:
+
+```text
+PHASE 4
+API TEST AUTOMATION
+```
+
+Phase 4 will introduce professional Postman assertions, response validation, negative testing, and API test automation.

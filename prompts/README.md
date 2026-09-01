@@ -35,6 +35,10 @@ This project is built incrementally, one phase at a time (see `docs/PROJECT_PHAS
 * **Phase 1** (`phase-1-project-scaffolding.md`) established the project structure, the initial Postman collection/environment, and base documentation.
 * **Phase 2** (`phase-2-api-discovery.md`) — **completed** — discovered and documented the actual QA-Demo API: base URL, authentication mechanism, endpoint inventory, request/response structures, and a Postman implementation plan. Results are in `docs/API_DISCOVERY.md` and `docs/api-inventory.json`.
 * **Phase 3** (`phase-3-api-request-implementation.md`) — **completed** — implemented the discovered APIs as actual Postman requests (24 requests across 6 resource-based folders) in the `QA-Demo Project` collection, using Phase 2's findings as the source of truth. No test assertions were added. Results are in `docs/POSTMAN_IMPLEMENTATION.md`.
+* **Phase 4** (`phase-4-api-test-automation.md`) — **completed** — converted the Phase 3 requests into an automated test suite: 38 requests (24 main + 14 dedicated negative/boundary requests) now carry live-verified `pm.test()` assertions for status codes, response structure, headers, data types, authentication, negative/boundary scenarios, and JSON schema. No dynamic data chaining, Newman, or CI/CD were implemented. Results are in `docs/API_TEST_AUTOMATION.md`.
+* **Phase 5** (`phase-5-api-data-chaining.md`) — **completed** — added a new `09 - Workflows` folder (renumbered to `08 - Workflows` in Phase 5.1) chaining requests into 4 stateful workflows with dynamic id capture/reuse, authentication chaining, CRUD lifecycles, and automatic cleanup, without modifying any of the 38 existing Phase 3/4 requests or assertions. No Newman, npm automation, or CI/CD were implemented. Results are in `docs/API_DATA_CHAINING.md`.
+* **Phase 5.1** (`phase-5.1-postman-ui-organization.md`) — **completed** — reorganized the Postman collection's presentation only (request/folder descriptions, a "Tests:" summary on every Phase 3/4 request, a professional collection description, and removal of one empty leftover folder with renumbering). Zero functional change - verified by a field-level diff (method/url/header/body/auth/scripts) and by re-running the Phase 4/5 live-verification harnesses with identical results. Results are in `docs/POSTMAN_UI_ARCHITECTURE.md`.
+* **Phase 6** (`phase-6-newman-automation.md`) — **completed** — added command-line execution via Newman: `package.json` with `npm test` and per-workflow scripts, HTML reporting into `reports/`, and verified exit-code behavior (0 on success, non-zero on failure, confirmed by deliberately forcing a failure). Discovered and documented a Newman-specific compatibility finding (`pm.execution.setNextRequest(null)` stops the entire run, not just a folder) and designed the npm scripts around it without changing any collection content. No CI/CD was implemented. Results are in `docs/NEWMAN_API_AUTOMATION.md`.
 
 ## Current Prompt Files
 
@@ -44,6 +48,10 @@ prompts/
 ├── phase-1-project-scaffolding.md
 ├── phase-2-api-discovery.md
 ├── phase-3-api-request-implementation.md
+├── phase-4-api-test-automation.md
+├── phase-5-api-data-chaining.md
+├── phase-5.1-postman-ui-organization.md
+├── phase-6-newman-automation.md
 └── README.md
 ```
 

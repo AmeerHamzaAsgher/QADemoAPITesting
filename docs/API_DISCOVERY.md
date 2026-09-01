@@ -2,6 +2,8 @@
 
 > **Phase 3 implementation status (added 2026-08-31, does not alter the Phase 2 findings below):**
 > All 24 endpoints documented here have a corresponding Postman request in the `QA-Demo Project` collection (21 fully implemented, 3 with method/URL/auth implemented but an undetermined request body). See `docs/POSTMAN_IMPLEMENTATION.md` for the full implementation matrix and unresolved-body details.
+>
+> **Phase 4 correction (added 2026-08-31):** every mention below of the Zod schema-validation error shape as a **top-level, unwrapped** body (`{ issues: [...], name: "ZodError" }` with no `success` key) is **incorrect as of Phase 4 re-verification**. Live re-testing during Phase 4 shows this shape is actually **wrapped inside the standard error envelope**: `{ "success": false, "error": { "issues": [...], "name": "ZodError" } }`. This may reflect a backend change made after Phase 2 discovery (this is a live, actively-updated demo application), or a Phase 2 transcription error — the cause was not determined. The Postman collection's test scripts and response examples have been corrected to match the current, live-verified shape. Treat every unwrapped-shape example in this document as historical/superseded; do not use it to build new assertions. See `docs/API_TEST_AUTOMATION.md`, "Phase 4 Corrections".
 
 **Phase:** Phase 2 — API Discovery & Analysis
 **Application:** https://qademo.com/

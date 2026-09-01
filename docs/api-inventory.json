@@ -1140,5 +1140,193 @@
     "No pagination/filter/sort query parameters were found in the frontend client; server-side support for undocumented parameters cannot be ruled out.",
     "Rate limiting and HEAD support were not tested.",
     "Discovery used static bundle analysis plus direct curl requests, not a live browser network capture; runtime-conditional calls not present in reachable code paths may have been missed."
-  ]
+  ],
+  "testsImplemented": true,
+  "phase4Implementation": {
+    "date": "2026-08-31",
+    "collection": "QA-Demo Project",
+    "environment": "QA-Demo Environment",
+    "totalRequestsInCollection": 38,
+    "mainResourceRequests": 24,
+    "dedicatedNegativeBoundaryRequests": 14,
+    "requestsWithTests": 38,
+    "collectionLevelAssertions": 1,
+    "requestLevelAssertionsAuthored": 132,
+    "liveVerifiedAssertionsExecutedThisPhase": 87,
+    "liveVerifiedAssertionsPassed": 87,
+    "liveVerifiedAssertionsFailed": 0,
+    "notes": "Every request in the collection has a pm.test() script. Assertions were validated by executing live HTTP requests against https://qademo.com/api (via curl/Python during this session, not Newman - Newman is out of scope for Phase 4) and confirming each assertion's condition against the real response. See docs/API_TEST_AUTOMATION.md for the full methodology and results.",
+    "phase4Corrections": [
+      {
+        "finding": "POST /auth/logout does not actually require authentication",
+        "detail": "Phase 2/3 recorded authRequired=true for this endpoint (endpoint id 2 below) based on the frontend client always attaching a Bearer header when available. Live testing in Phase 4 shows the endpoint returns 200 { success: true, data: { message: 'Logged out successfully' } } even with no Authorization header at all."
+      },
+      {
+        "finding": "Zod validation error responses are wrapped in the standard error envelope, not top-level",
+        "detail": "Phase 2/3 documented the schema-validation error shape as a top-level, unwrapped body: { issues: [...], name: 'ZodError' }, with no success key. Live re-verification in Phase 4 shows it is actually wrapped: { success: false, error: { issues: [...], name: 'ZodError' } }. All Phase 4 test assertions use the corrected, wrapped shape; the Login response example in the collection was corrected to match."
+      },
+      {
+        "finding": "POST /cart/items requires quantity > 0 (strictly greater than zero)",
+        "detail": "New Phase 4 finding, not previously documented: quantity=0 and negative quantities are rejected with 400 ZodError (too_small, minimum 0, exclusive)."
+      },
+      {
+        "finding": "PATCH /cart/items/{productId} allows quantity >= 0 (zero is valid, negative is not)",
+        "detail": "New Phase 4 finding: unlike POST /cart/items, PATCH permits quantity=0 (schema minimum is inclusive of 0); negative values are rejected with 400 ZodError (too_small, minimum 0, inclusive). Schema validation runs before the cart-item-existence check."
+      },
+      {
+        "finding": "DELETE /cart/items/{productId} for an item not in the cart returns a distinct error message",
+        "detail": "New Phase 4 finding: returns 404 { success:false, error:{ code:'NOT_FOUND', message:'Cart item not found' } } - distinct from the product-catalog 'Product not found' message, confirming separate not-found handling for cart items vs. products."
+      }
+    ]
+  },
+  "dataChainingImplemented": true,
+  "phase5Implementation": {
+    "date": "2026-08-31",
+    "collection": "QA-Demo Project",
+    "environment": "QA-Demo Environment",
+    "newFolder": "09 - Workflows",
+    "workflowsImplemented": 4,
+    "workflowRequestsAdded": 16,
+    "newCollectionVariables": [
+      "wf_loginSucceeded",
+      "wf_sessionId",
+      "wf_productId",
+      "wf_productSlug",
+      "wf_cartQuantity",
+      "wf_updatedCartQuantity",
+      "wf_listedProductId",
+      "wf_listedProductSlug",
+      "wf_listedProductName",
+      "wf_adminProductId",
+      "wf_adminNewStock"
+    ],
+    "workflows": [
+      {
+        "name": "Workflow 01 - Authentication Chaining",
+        "chainable": true,
+        "dynamicData": true,
+        "executedLiveSuccessPath": false,
+        "reason": "no valid test credentials available"
+      },
+      {
+        "name": "Workflow 02 - Cart CRUD Lifecycle",
+        "chainable": true,
+        "dynamicData": true,
+        "executedLiveSuccessPath": true,
+        "runsVerified": 3
+      },
+      {
+        "name": "Workflow 03 - Products List to Detail",
+        "chainable": true,
+        "dynamicData": true,
+        "executedLiveSuccessPath": true,
+        "runsVerified": 2
+      },
+      {
+        "name": "Workflow 04 - Admin Product Stock Update",
+        "chainable": true,
+        "dynamicData": true,
+        "executedLiveSuccessPath": false,
+        "reason": "no admin credentials available"
+      }
+    ],
+    "notImplemented": [
+      {
+        "workflow": "Products full CRUD (Create/Update/Delete)",
+        "reason": "POST /products and PATCH /products/{id} request body schema was never determined (Phase 2/3) - cannot build without inventing fields"
+      },
+      {
+        "workflow": "Orders full CRUD (Create/Read)",
+        "reason": "POST /orders request body schema was never determined (Phase 2/3)"
+      },
+      {
+        "workflow": "Image upload workflow",
+        "reason": "requires a real file and admin credentials; success response shape never observed"
+      }
+    ],
+    "notes": "The original 38 Phase 3/4 requests and their 133 assertions were not modified - verified via SHA-256 hash comparison of the collection's first 8 folders before/after this phase. See docs/API_DATA_CHAINING.md for full architecture, variable strategy, and live execution evidence."
+  },
+  "uiOrganized": true,
+  "phase5_1Implementation": {
+    "date": "2026-08-31",
+    "collection": "QA-Demo Project",
+    "environment": "QA-Demo Environment",
+    "changeType": "presentation-only, zero functional change",
+    "folderRenamed": {
+      "from": "09 - Workflows",
+      "to": "08 - Workflows"
+    },
+    "folderRemoved": {
+      "name": "08 - Cleanup",
+      "requestsAffected": 0,
+      "reason": "empty placeholder folder, superseded by Workflow 02's explicit cleanup step"
+    },
+    "requestsBefore": 54,
+    "requestsAfter": 54,
+    "foldersBefore": 9,
+    "foldersAfter": 8,
+    "assertionsBefore": 133,
+    "assertionsAfter": 133,
+    "descriptionsEnhanced": 38,
+    "backupLocation": "postman/backups/phase-5-pre-5.1/",
+    "functionalDiffMismatches": 0,
+    "notes": "Every request's method/url/header/body/auth/event (pre-request+test scripts) verified byte-identical before/after via programmatic diff. Phase 4 and Phase 5 live-verification harnesses re-run with identical results (87/87 assertions, all workflow runs passing). See docs/POSTMAN_UI_ARCHITECTURE.md."
+  },
+  "newmanAutomationImplemented": true,
+  "phase6Implementation": {
+    "date": "2026-08-31",
+    "newmanVersion": "6.2.2",
+    "nodeVersion": "v24.19.0",
+    "npmVersion": "11.17.0",
+    "htmlReporter": "newman-reporter-htmlextra@1.23.1",
+    "primaryCommand": "npm test",
+    "compatibilityFinding": "pm.execution.setNextRequest(null) stops the ENTIRE Newman run, not just the current folder. Verified live: running the whole '08 - Workflows' folder in one invocation executed only 1 of 16 requests before Workflow 01's gated Login step terminated the run. Fixed by running each of the 4 workflow sub-folders as a separate `newman run --folder` invocation in package.json's npm scripts - no collection content was changed.",
+    "executionResults": {
+      "mainSuite": {
+        "requests": 38,
+        "assertions": 126,
+        "failed": 0,
+        "exitCode": 0
+      },
+      "workflow01Auth": {
+        "requestsExecuted": 1,
+        "requestsInWorkflow": 2,
+        "assertions": 3,
+        "failed": 0,
+        "exitCode": 0,
+        "note": "gated at step 1 - no valid credentials configured, by design"
+      },
+      "workflow02Cart": {
+        "requestsExecuted": 8,
+        "requestsInWorkflow": 8,
+        "assertions": 25,
+        "failed": 0,
+        "exitCode": 0
+      },
+      "workflow03Products": {
+        "requestsExecuted": 2,
+        "requestsInWorkflow": 2,
+        "assertions": 6,
+        "failed": 0,
+        "exitCode": 0
+      },
+      "workflow04Admin": {
+        "requestsExecuted": 1,
+        "requestsInWorkflow": 4,
+        "assertions": 2,
+        "failed": 0,
+        "exitCode": 0,
+        "note": "gated at step 1 - no valid admin credentials configured, by design"
+      }
+    },
+    "exitCodeVerification": "Deliberately forced a failure via --env-var apiUrl=<broken-url> (temporary CLI override, no files changed); confirmed newman run and npm run test:main -- --env-var ... both exit with code 1.",
+    "reportsGenerated": [
+      "reports/newman-main-report.html",
+      "reports/newman-workflow-01-authentication-report.html",
+      "reports/newman-workflow-02-cart-report.html",
+      "reports/newman-workflow-03-products-report.html",
+      "reports/newman-workflow-04-admin-report.html"
+    ],
+    "notes": "Collection and environment content unchanged from Phase 5.1 - Newman automation is purely an execution layer on top. See docs/NEWMAN_API_AUTOMATION.md."
+  }
 }

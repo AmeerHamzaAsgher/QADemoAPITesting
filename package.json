@@ -1,0 +1,28 @@
+{
+  "name": "qa-demo-api-testing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Newman/Postman API automation test suite for the QA-Demo application (https://qademo.com/). Executes the QA-Demo Project Postman collection (positive/negative/boundary tests plus Phase 5 data-chaining workflows) from the command line.",
+  "scripts": {
+    "test": "npm run test:main && npm run test:workflow-auth && npm run test:workflow-cart && npm run test:workflow-products && npm run test:workflow-admin",
+    "test:main": "newman run \"postman/collections/QA-Demo Project.postman_collection.json\" -e \"postman/environments/QA-Demo Environment.postman_environment.json\" --folder \"01 - Authentication\" --folder \"02 - Products\" --folder \"03 - Cart\" --folder \"04 - Orders\" --folder \"05 - Admin\" --folder \"06 - Images\" --folder \"07 - Negative Tests\" -r cli,htmlextra --reporter-htmlextra-export reports/newman-main-report.html",
+    "test:workflows": "npm run test:workflow-auth && npm run test:workflow-cart && npm run test:workflow-products && npm run test:workflow-admin",
+    "test:workflow-auth": "newman run \"postman/collections/QA-Demo Project.postman_collection.json\" -e \"postman/environments/QA-Demo Environment.postman_environment.json\" --folder \"Workflow 01 - Authentication Chaining\" -r cli,htmlextra --reporter-htmlextra-export reports/newman-workflow-01-authentication-report.html",
+    "test:workflow-cart": "newman run \"postman/collections/QA-Demo Project.postman_collection.json\" -e \"postman/environments/QA-Demo Environment.postman_environment.json\" --folder \"Workflow 02 - Cart CRUD Lifecycle\" -r cli,htmlextra --reporter-htmlextra-export reports/newman-workflow-02-cart-report.html",
+    "test:workflow-products": "newman run \"postman/collections/QA-Demo Project.postman_collection.json\" -e \"postman/environments/QA-Demo Environment.postman_environment.json\" --folder \"Workflow 03 - Products List to Detail\" -r cli,htmlextra --reporter-htmlextra-export reports/newman-workflow-03-products-report.html",
+    "test:workflow-admin": "newman run \"postman/collections/QA-Demo Project.postman_collection.json\" -e \"postman/environments/QA-Demo Environment.postman_environment.json\" --folder \"Workflow 04 - Admin Product Stock Update (Requires Authentication)\" -r cli,htmlextra --reporter-htmlextra-export reports/newman-workflow-04-admin-report.html",
+    "test:cli": "newman run \"postman/collections/QA-Demo Project.postman_collection.json\" -e \"postman/environments/QA-Demo Environment.postman_environment.json\" --folder \"01 - Authentication\" --folder \"02 - Products\" --folder \"03 - Cart\" --folder \"04 - Orders\" --folder \"05 - Admin\" --folder \"06 - Images\" --folder \"07 - Negative Tests\""
+  },
+  "keywords": [
+    "postman",
+    "newman",
+    "api-testing",
+    "qa-automation"
+  ],
+  "author": "",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "newman": "^6.2.2",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}

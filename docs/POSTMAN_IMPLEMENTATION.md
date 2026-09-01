@@ -4,6 +4,10 @@
 **Application:** https://qademo.com/
 **Source of truth:** `docs/API_DISCOVERY.md` and `docs/api-inventory.json` (Phase 2)
 
+> **Phase 4 correction (added 2026-08-31):** the Zod validation error shape referenced throughout this document as a top-level, unwrapped body was found to actually be wrapped in the standard error envelope (`{ success: false, error: { issues, name: "ZodError" } }`) during Phase 4 live re-verification. The response example on `POST - Login` in the collection has been corrected. See `docs/API_TEST_AUTOMATION.md`, "Phase 4 Corrections".
+>
+> **Phase 5 update (added 2026-08-31):** the requests documented below remain exactly as Phase 3 left them (unmodified, verified by hash) and are still independent, standalone requests suitable for ad-hoc testing. Phase 5 added a **separate, additive** `09 - Workflows` folder (renamed to `08 - Workflows` in Phase 5.1) that chains a subset of these same underlying endpoints into ordered, stateful workflows with dynamic data extraction (Create → Read → Update → Delete style lifecycles). This document describes the independent-request layer; see `docs/API_DATA_CHAINING.md` for the data-driven workflow layer built on top of it.
+
 ---
 
 ## Project

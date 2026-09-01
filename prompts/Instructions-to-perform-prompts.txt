@@ -1,4 +1,4 @@
-Prompt for phase-2
+2. Prompt for phase-2
 Before executing Phase 2, inspect the current project.
 
 1. Confirm the current working directory.
@@ -9,3 +9,249 @@ Before executing Phase 2, inspect the current project.
 6. Do not modify anything yet.
 
 Report what you found and wait for my confirmation.
+
+3. Prompt for phase-3
+Execute Phase 3.
+
+Read and follow:
+
+`prompts/phase-3-api-request-implementation.md`
+
+Before making changes, read the Phase 1 and Phase 2 prompts and inspect the Phase 2 deliverables:
+
+`docs/API_DISCOVERY.md`
+
+`docs/api-inventory.json`
+
+Use the verified Phase 2 API discovery as the source of truth.
+
+Implement the actual discovered APIs in the existing Postman collection:
+
+`QA-Demo Project`
+
+using:
+
+`QA-Demo Environment`
+
+Preserve all Phase 1 and Phase 2 work.
+
+Do not invent APIs or endpoint information.
+
+Do not add comprehensive test assertions yet.
+
+Do not implement Newman, npm automation, GitHub, GitHub Actions, or CI/CD.
+
+Execute Phase 3 only, validate all changes, provide the final Phase 3 report, and STOP.
+
+
+4. Prompt for phase 4
+Execute Phase 4 — API Test Automation.
+
+Read and follow:
+
+`prompts/phase-4-api-test-automation.md`
+
+Before making any changes, read and respect all previous phases:
+
+`prompts/phase-1-project-scaffolding.md`
+
+`prompts/phase-2-api-discovery.md`
+
+`prompts/phase-3-api-request-implementation.md`
+
+Use these Phase 2/3 artifacts as the source of truth:
+
+`docs/API_DISCOVERY.md`
+
+`docs/api-inventory.json`
+
+`docs/POSTMAN_IMPLEMENTATION.md`
+
+Inspect the existing:
+
+`QA-Demo Project`
+
+collection and:
+
+`QA-Demo Environment`
+
+Do not invent API behavior.
+
+Implement professional Postman API tests and assertions for the actual Phase 3 requests.
+
+Cover appropriate:
+
+* Status codes
+* Response time
+* Headers
+* Content type
+* Required fields
+* Data types
+* Response structures
+* CRUD behavior
+* Authentication
+* Negative scenarios
+* Validation scenarios
+* Boundary scenarios
+* Error responses
+* JSON schemas where appropriate
+
+Create/update:
+
+`docs/API_TEST_AUTOMATION.md`
+
+Update the project README and prompts README as required.
+
+Preserve all Phase 1–3 work.
+
+Do NOT implement Phase 5 data chaining.
+
+Do NOT implement Newman.
+
+Do NOT implement npm automation.
+
+Do NOT implement GitHub Actions.
+
+Do NOT implement CI/CD.
+
+Execute Phase 4 only.
+
+Run/validate the Postman tests where possible.
+
+At the end, provide a complete Phase 4 compliance report including:
+
+* Total API requests
+* Requests with tests
+* Positive tests
+* Negative tests
+* Boundary tests
+* Authentication tests
+* CRUD tests
+* Schema validations
+* Total assertions/tests
+* Passed
+* Failed
+* Skipped
+* Any unresolved items
+* Files created/modified
+* Final project structure
+
+Then STOP.
+------------------------------------------------------------------------
+5. Prompt for phase 5
+Execute Phase 5 — API Data Chaining & Workflow Automation.
+
+Read and follow:
+
+`prompts/phase-5-api-data-chaining.md`
+
+Before modifying anything, read all previous phase prompts and documentation:
+
+`prompts/phase-1-project-scaffolding.md`
+
+`prompts/phase-2-api-discovery.md`
+
+`prompts/phase-3-api-request-implementation.md`
+
+`prompts/phase-4-api-test-automation.md`
+
+Also read:
+
+`docs/API_DISCOVERY.md`
+
+`docs/api-inventory.json`
+
+`docs/POSTMAN_IMPLEMENTATION.md`
+
+`docs/API_TEST_AUTOMATION.md`
+
+Inspect the existing `QA-Demo Project` collection and `QA-Demo Environment`.
+
+Preserve all Phase 1–4 work.
+
+Identify only the API workflows that are actually supported by the discovered application.
+
+Implement appropriate dynamic data extraction, variable storage, request chaining, dynamic test data, authentication chaining, CRUD workflows, and cleanup.
+
+Remove hardcoded generated IDs where dynamic IDs can be used.
+
+Preserve all Phase 4 assertions.
+
+Create/update:
+
+`docs/API_DATA_CHAINING.md`
+
+Update `README.md`, `prompts/README.md`, `docs/api-inventory.json`, and `docs/POSTMAN_IMPLEMENTATION.md` only where appropriate.
+
+Execute and validate the workflows in Postman where possible.
+
+Run workflows repeatedly to verify that they do not depend on manually entered IDs.
+
+Do NOT implement Newman.
+
+Do NOT implement npm automation.
+
+Do NOT implement GitHub Actions.
+
+Do NOT implement CI/CD.
+
+At the end, provide a detailed Phase 5 compliance report containing:
+
+* Chainable APIs identified
+* Workflows implemented
+* Dynamic variables created
+* Dynamic IDs captured
+* Authentication chaining
+* CRUD workflows
+* Cleanup strategy
+* Number of workflow tests
+* Passed
+* Failed
+* Skipped
+* Known limitations
+* Files created/modified
+* Final project structure
+
+Then STOP.
+---------------------------------------------------------
+5.1 prompt for phase 5.1
+Execute **Phase 5.1 — Postman UI Organization**.
+
+1. Read and follow `prompts/phase-5.1-postman-ui-organization.md` completely.
+2. Read the Phase 1–5 prompts and existing documentation before making changes.
+3. Inspect the existing `QA-Demo Project` collection and `QA-Demo Environment`.
+4. Create a backup before modifying anything.
+5. Organize the Postman collection into a professional, easy-to-understand UI structure with logical folders, request names, descriptions, and workflow grouping.
+6. **Keep all Phase 1–5 functionality unchanged** — URLs, methods, headers, bodies, variables, authentication, scripts, tests, assertions, and data chaining.
+7. Do not invent endpoints, tests, or API behavior.
+8. Create/update `docs/POSTMAN_UI_ARCHITECTURE.md`.
+9. Open/validate the collection in Postman and verify Phase 4 tests and Phase 5 workflows still work.
+10. Provide a final summary of changes and validation results.
+
+**Do not implement Newman, npm automation, GitHub Actions, or CI/CD. Stop after Phase 5.1.**
+--------------------------------------------------------
+
+
+
+
+---------------------------------------------------------
+7. Prompt for phase 7
+Execute **Phase 7 — Git & GitHub Integration**.
+
+Read and follow `prompts/phase-7-github-integration.md`.
+
+Use the existing Git repository and existing GitHub remote.
+
+First inspect the current Git status, branch, remote, commits, and `.gitignore`.
+
+Do not delete history, force-push, create a new repository, or commit secrets.
+
+Review and stage the appropriate Phase 6/7 files, commit them, push to the existing GitHub repository, and verify the push and clean working tree.
+
+Do not implement GitHub Actions or CI/CD yet.
+
+Provide the final Git/GitHub verification report and STOP.
+
+---------------------------------------------------------------
+
+
